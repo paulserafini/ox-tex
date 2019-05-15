@@ -410,21 +410,7 @@ references."
      "[NO-DEFAULT-PACKAGES]
       [NO-PACKAGES]"
      ("\\section %s" . "\\section %s")
-     ("\\subsection %s" . "\\subsection %s"))
-    ("report"
-     "\\documentclass[11pt]{report}"
-     ("\\part{%s}" . "\\part*{%s}")
-     ("\\chapter{%s}" . "\\chapter*{%s}")
-     ("\\section{%s}" . "\\section*{%s}")
-     ("\\subsection{%s}" . "\\subsection*{%s}")
-     ("\\subsubsection{%s}" . "\\subsubsection*{%s}"))
-    ("book"
-     "\\documentclass[11pt]{book}"
-     ("\\part{%s}" . "\\part*{%s}")
-     ("\\chapter{%s}" . "\\chapter*{%s}")
-     ("\\section{%s}" . "\\section*{%s}")
-     ("\\subsection{%s}" . "\\subsection*{%s}")
-     ("\\subsubsection{%s}" . "\\subsubsection*{%s}")))
+     ("\\subsection %s" . "\\subsection %s")))
   "Alist of LaTeX classes and associated header and structure.
 If #+LATEX_CLASS is set in the buffer, use its value and the
 associated information.  Here is the structure of each cell:
