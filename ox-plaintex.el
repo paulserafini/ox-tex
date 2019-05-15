@@ -2900,7 +2900,7 @@ contextual information."
 		      (t "%s"))))
 	  (format
 	   float-env
-	   (concat (format "\\begin{verbatim}\n%s\\end{verbatim}"
+	   (concat (format "\\verbatim|%s|endverbatim"
 			   (org-export-format-code-default src-block info))))))
        ;; Case 2.  Custom environment.
        (custom-env
