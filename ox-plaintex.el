@@ -1972,7 +1972,7 @@ holding contextual information."
 		  (when (org-export-first-sibling-p headline info)
 		    (format "\\begin{%s}\n" (if numberedp 'enumerate 'itemize)))
 		  ;; Itemize headline
-		  "\\item"
+		  "\\li"
 		  (and full-text
 		       (string-match-p "\\`[ \t]*\\[" full-text)
 		       "\\relax")
@@ -2594,12 +2594,12 @@ contextual information."
 	 (attr (org-export-read-attribute :attr_latex plain-list))
 	 (latex-type (let ((env (plist-get attr :environment)))
 		       (cond (env (format "%s" env))
-			     ((eq type 'ordered) "enumerate")
+			     ((eq type 'ordered) "numberedlist")
 			     ((eq type 'descriptive) "description")
-			     (t "itemize")))))
+			     (t "orderedlist")))))
     (org-latex--wrap-label
      plain-list
-     (format "\\begin{%s}%s\n%s\\end{%s}"
+     (format "\\%s%s\n%s\\end%s"
 	     latex-type
 	     (or (plist-get attr :options) "")
 	     contents
