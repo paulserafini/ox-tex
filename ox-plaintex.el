@@ -3059,7 +3059,7 @@ holding contextual information."
 (defun org-latex-subscript (_subscript contents _info)
   "Transcode a SUBSCRIPT object from Org to LaTeX.
 CONTENTS is the contents of the object."
-  (format "\\textsubscript{%s}" contents))
+  (format "_{%s}" contents))
 
 
 ;;;; Superscript
@@ -3067,7 +3067,7 @@ CONTENTS is the contents of the object."
 (defun org-latex-superscript (_superscript contents _info)
   "Transcode a SUPERSCRIPT object from Org to LaTeX.
 CONTENTS is the contents of the object."
-  (format "\\textsuperscript{%s}" contents))
+  (format "^{%s}" contents))
 
 
 ;;;; Table
