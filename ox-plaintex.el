@@ -2810,7 +2810,14 @@ containing export options.  Modify DATA by side-effect and return it."
 CONTENTS is a string.  INFO is a plist used as a communication
 channel."
   (when (org-string-nw-p contents)
-    (format "\\(%s\\)" (org-trim contents))))
+    (format "$%s$" (org-trim contents))))
+
+;; (defun org-latex-math-block (_math-block contents _info)
+;;   "Transcode a MATH-BLOCK object from Org to LaTeX.
+;; CONTENTS is a string.  INFO is a plist used as a communication
+;; channel."
+;;   (when (org-string-nw-p contents)
+;;     (format "\\(%s\\)" (org-trim contents))))
 
 ;;;; Quote Block
 
