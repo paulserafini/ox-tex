@@ -1856,47 +1856,8 @@ CONTENTS is nil.  INFO is a plist holding contextual information."
 (defun org-latex-footnote-reference (footnote-reference _contents info)
   "Transcode a FOOTNOTE-REFERENCE element from Org to LaTeX.
 CONTENTS is nil.  INFO is a plist holding contextual information."
-  (let ((label (org-element-property :label footnote-reference)))
-    (concat
-     ;; Insert separator between two footnotes in a row.
-     (let ((prev (org-export-get-previous-element footnote-reference info)))
-       (when (eq (org-element-type prev) 'footnote-reference)
-	 (plist-get info :latex-footnote-separator)))
-     (cond
-      ;; Use `:latex-footnote-defined-format' if the footnote has
-      ;; already been defined.
-      ((not (org-export-footnote-first-reference-p footnote-reference info))
-       (format (plist-get info :latex-footnote-defined-format)
-	       (org-latex--label
-		(org-export-get-footnote-definition footnote-reference info)
-		info t)))
-      ;; Use \footnotemark if reference is within another footnote
-      ;; reference, footnote definition, table cell or item's tag.
-      ((or (org-element-lineage footnote-reference
-				'(footnote-reference footnote-definition
-						     table-cell))
-	   (eq 'item (org-element-type
-		      (org-export-get-parent-element footnote-reference))))
-       "\\footnotemark")
-      ;; Otherwise, define it with \footnote command.
-      (t
-       (let ((def (org-export-get-footnote-definition footnote-reference info)))
-	 (concat
-	  (format "\\footnote{%s%s}" (org-trim (org-export-data def info))
-		  ;; Only insert a \label if there exist another
-		  ;; reference to def.
-		  (cond ((not label) "")
-			((org-element-map (plist-get info :parse-tree) 'footnote-reference
-			   (lambda (f)
-			     (and (not (eq f footnote-reference))
-				  (equal (org-element-property :label f) label)
-				  (org-trim (org-latex--label def info t t))))
-			   info t))
-			(t "")))
-	  ;; Retrieve all footnote references within the footnote and
-	  ;; add their definition after it, since LaTeX doesn't support
-	  ;; them inside.
-	  (org-latex--delayed-footnotes-definitions def info))))))))
+  (let ((def (org-export-get-footnote-definition footnote-reference info)))
+    (format "\\numberedfootnote{%s}" (org-trim (org-export-data def info)))))
 
 
 ;;;; Headline
