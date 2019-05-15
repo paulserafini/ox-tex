@@ -754,7 +754,7 @@ default we use here encompasses both."
 
 ;;;; Tables
 
-(defcustom org-latex-default-table-environment "tabular"
+(defcustom org-latex-default-table-environment "halign"
   "Default environment used to build tables."
   :group 'org-export-latex
   :version "24.4"
@@ -792,7 +792,8 @@ When modifying this variable, it may be useful to change
 		 (const :tag "Verbatim" verbatim))
   :safe (lambda (s) (memq s '(table math inline-math verbatim))))
 
-(defcustom org-latex-tables-centered t
+;;(defcustom org-latex-tables-centered t
+(defcustom org-latex-tables-centered nil
   "When non-nil, tables are exported in a center environment."
   :group 'org-export-latex
   :type 'boolean
@@ -3130,15 +3131,15 @@ centered."
 	      ;; Check left border for the first cell only.
 	      (when (and (memq 'left borders) (not align))
 		(push "|" align))
-	      (push (if math? "c"	;center cells in matrices
+	      (push (if math? "\\hfil#\\hfil"	;center cells in matrices
 		      (cl-case (org-export-table-cell-alignment cell info)
-			(left "l")
-			(right "r")
-			(center "c")))
+			(left "\\quad#\\hfil")
+			(right "\\hfil#\\quad")
+			(center "\\hfil#\\hfil")))
 		    align)
 	      (when (memq 'right borders) (push "|" align))))
 	  info)
-	(apply 'concat (nreverse align)))))
+	(string-join align " & "))))
 
 (defun org-latex--org-table (table contents info)
   "Return appropriate LaTeX code for an Org table.
@@ -3235,7 +3236,7 @@ This function assumes TABLE has `org' as its `:type' property and
 					  width) "")
 			       alignment
 			       contents))
-		      (t (format "\\begin{%s}%s{%s}\n%s\\end{%s}"
+		      (t (format "\\%s{%s\n%s &\n%s}"
 				 table-env
 				 (if width (format "{%s}" width) "")
 				 alignment
@@ -3380,7 +3381,7 @@ a communication channel."
        ;; hline was specifically marked.
        (and booktabsp (not (org-export-get-previous-element table-row info))
 	    "\\toprule\n")
-       contents "\\\\\n"
+       contents "\\cr\n"
        (cond
 	;; Special case for long tables.  Define header and footers.
 	((and longtablep (org-export-table-row-ends-header-p table-row info))
