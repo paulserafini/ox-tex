@@ -407,12 +407,10 @@ references."
 
 (defcustom org-latex-classes
   '(("article"
-     "\\documentclass[11pt]{article}"
-     ("\\section{%s}" . "\\section*{%s}")
-     ("\\subsection{%s}" . "\\subsection*{%s}")
-     ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
-     ("\\paragraph{%s}" . "\\paragraph*{%s}")
-     ("\\subparagraph{%s}" . "\\subparagraph*{%s}"))
+     "[NO-DEFAULT-PACKAGES]
+      [NO-PACKAGES]"
+     ("\\section %s" . "\\section %s")
+     ("\\subsection %s" . "\\subsection %s"))
     ("report"
      "\\documentclass[11pt]{report}"
      ("\\part{%s}" . "\\part*{%s}")
