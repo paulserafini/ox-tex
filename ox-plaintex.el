@@ -208,7 +208,7 @@
   (format
    "\\`[ \t]*\\\\begin{%s\\*?}"
    (regexp-opt
-	   '("equation" "eqnarray" "math" "displaymath"
+	   '("equation" "eqnarray" "math" "displaymath" "$$"
 	     "align"  "gather" "multline" "flalign"  "alignat"
 	     "xalignat" "xxalignat"
 	     "subequations"
