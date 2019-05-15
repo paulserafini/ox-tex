@@ -826,12 +826,12 @@ When nil, no transformation is made."
 
 ;;;; Text markup
 
-(defcustom org-latex-text-markup-alist '((bold . "\\textbf{%s}")
+(defcustom org-latex-text-markup-alist '((bold . "{\\bf %s}")
 					 (code . protectedtexttt)
-					 (italic . "\\emph{%s}")
-					 (strike-through . "\\sout{%s}")
-					 (underline . "\\uline{%s}")
-					 (verbatim . protectedtexttt))
+					 (italic . "{\\it %s}")
+					 (strike-through . "%s")
+					 (underline . "{\\underline %s}")
+					 (verbatim . "{\tt %s}"))
   "Alist of LaTeX expressions to convert text markup.
 
 The key must be a symbol among `bold', `code', `italic',
