@@ -1383,6 +1383,59 @@ Return the new header."
 		    ", ")
 	 t nil header 1)))))
 
+(defun org-latex-guess-polyglossia-language (header info)
+  "Set the Polyglossia language according to the LANGUAGE keyword.
+
+HEADER is the LaTeX header string.  INFO is the plist used as
+a communication channel.
+
+Insertion of guessed language only happens when the Polyglossia
+package has been explicitly loaded.
+
+The argument to Polyglossia may be \"AUTO\" which is then
+replaced with the language of the document or
+`org-export-default-language'.  Note, the language is really set
+using \setdefaultlanguage and not as an option to the package.
+
+Return the new header."
+  (let ((language (plist-get info :language)))
+    ;; If no language is set or Polyglossia is not loaded, return
+    ;; HEADER as-is.
+    (if (or (not (stringp language))
+	    (not (string-match
+		  "\\\\usepackage\\(?:\\[\\([^]]+?\\)\\]\\){polyglossia}\n"
+		  header)))
+	header
+      (let* ((options (org-string-nw-p (match-string 1 header)))
+	     (languages (and options
+			     ;; Reverse as the last loaded language is
+			     ;; the main language.
+			     (nreverse
+			      (delete-dups
+			       (save-match-data
+				 (org-split-string
+				  (replace-regexp-in-string
+				   "AUTO" language options t)
+				  ",[ \t]*"))))))
+	     (main-language-set
+	      (string-match-p "\\\\setmainlanguage{.*?}" header)))
+	(replace-match
+	 (concat "\\usepackage{polyglossia}\n"
+		 (mapconcat
+		  (lambda (l)
+		    (let ((l (or (assoc l org-latex-polyglossia-language-alist)
+				 l)))
+		      (format (if main-language-set "\\setotherlanguage%s{%s}\n"
+				(setq main-language-set t)
+				"\\setmainlanguage%s{%s}\n")
+			      (if (and (consp l) (= (length l) 3))
+				  (format "[variant=%s]" (nth 2 l))
+				"")
+			      (nth 1 l))))
+		  languages
+		  ""))
+	 t t header 0)))))
+
 (defun org-latex--remove-packages (pkg-alist info)
   "Remove packages based on the current LaTeX compiler.
 
