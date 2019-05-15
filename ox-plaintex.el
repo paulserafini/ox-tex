@@ -2225,7 +2225,7 @@ channel."
 CONTENTS holds the contents of the block.  INFO is a plist
 holding contextual information."
   (org-latex--wrap-label
-   quote-block (format "\\begin{quote}\n%s\\end{quote}" contents) info))
+   quote-block (format "\n{\\narrower\\smallskip\\noindent %s \\smallskip}\n" contents) info))
 
 
 ;;;; Radio Target
@@ -2620,7 +2620,7 @@ contextual information."
    ;; character and change each white space at beginning of a line
    ;; into a space of 1 em.  Also change each blank line with
    ;; a vertical space of 1 em.
-   (format "\\begin{verse}\n%s\\end{verse}"
+   (format "\n{\\narrower\\smallskip\\noindent %s \\smallskip}\n"
 	   (replace-regexp-in-string
 	    "^[ \t]+" (lambda (m) (format "\\hspace*{%dem}" (length m)))
 	    (replace-regexp-in-string
