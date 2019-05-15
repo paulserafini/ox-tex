@@ -3146,109 +3146,11 @@ channel.
 
 This function assumes TABLE has `org' as its `:type' property and
 `table' as its `:mode' attribute."
-  (let* ((caption (org-latex--caption/label-string table info))
-	 (attr (org-export-read-attribute :attr_latex table))
-	 ;; Determine alignment string.
-	 (alignment (org-latex--align-string table info))
-	 ;; Determine environment for the table: longtable, tabular...
-	 (table-env (or (plist-get attr :environment)
-			(plist-get info :latex-default-table-environment)))
-	 ;; If table is a float, determine environment: table, table*
-	 ;; or sidewaystable.
-	 (float-env (unless (member table-env '("longtable" "longtabu"))
-		      (let ((float (plist-get attr :float)))
-			(cond
-			 ((and (not float) (plist-member attr :float)) nil)
-			 ((or (string= float "sidewaystable")
-			      (string= float "sideways")) "sidewaystable")
-			 ((string= float "multicolumn") "table*")
-			 ((or float
-			      (org-element-property :caption table)
-			      (org-string-nw-p (plist-get attr :caption)))
-			  "table")))))
-	 ;; Extract others display options.
-	 (fontsize (let ((font (plist-get attr :font)))
-		     (and font (concat font "\n"))))
-	 ;; "tabular" environment doesn't allow to define a width.
-	 (width (and (not (equal table-env "tabular")) (plist-get attr :width)))
-	 (spreadp (plist-get attr :spread))
-	 (placement
-	  (or (plist-get attr :placement)
-	      (format "[%s]" (plist-get info :latex-default-figure-position))))
-	 (centerp (if (plist-member attr :center) (plist-get attr :center)
-		    (plist-get info :latex-tables-centered)))
-	 (caption-above-p (org-latex--caption-above-p table info)))
+  (let* ((alignment (org-latex--align-string table info)))
     ;; Prepare the final format string for the table.
-    (cond
-     ;; Longtable.
-     ((equal "longtable" table-env)
-      (concat (and fontsize (concat "{" fontsize))
-	      (format "\\begin{longtable}{%s}\n" alignment)
-	      (and caption-above-p
-		   (org-string-nw-p caption)
-		   (concat caption "\\\\\n"))
-	      contents
-	      (and (not caption-above-p)
-		   (org-string-nw-p caption)
-		   (concat caption "\\\\\n"))
-	      "\\end{longtable}\n"
-	      (and fontsize "}")))
-     ;; Longtabu
-     ((equal "longtabu" table-env)
-      (concat (and fontsize (concat "{" fontsize))
-	      (format "\\begin{longtabu}%s{%s}\n"
-		      (if width
-			  (format " %s %s "
-				  (if spreadp "spread" "to") width) "")
-		      alignment)
-	      (and caption-above-p
-		   (org-string-nw-p caption)
-		   (concat caption "\\\\\n"))
-	      contents
-	      (and (not caption-above-p)
-		   (org-string-nw-p caption)
-		   (concat caption "\\\\\n"))
-	      "\\end{longtabu}\n"
-	      (and fontsize "}")))
-     ;; Others.
-     (t (concat (cond
-		 (float-env
-		  (concat (format "\\begin{%s}%s\n" float-env placement)
-			  (if caption-above-p caption "")
-			  (when centerp "\\centering\n")
-			  fontsize))
-		 ((and (not float-env) caption)
-		  (concat
-		   (and centerp "\\begin{center}\n" )
-		   (if caption-above-p caption "")
-		   (cond ((and fontsize centerp) fontsize)
-			 (fontsize (concat "{" fontsize)))))
-		 (centerp (concat "\\begin{center}\n" fontsize))
-		 (fontsize (concat "{" fontsize)))
-		(cond ((equal "tabu" table-env)
-		       (format "\\begin{tabu}%s{%s}\n%s\\end{tabu}"
-			       (if width (format
-					  (if spreadp " spread %s " " to %s ")
-					  width) "")
-			       alignment
-			       contents))
-		      (t (format "\\%s{%s\n%s \\cr\n%s}"
-				 table-env
-				 (if width (format "{%s}" width) "")
-				 alignment
-				 contents
-				 table-env)))
-		(cond
-		 (float-env
-		  (concat (if caption-above-p "" (concat "\n" caption))
-			  (format "\n\\end{%s}" float-env)))
-		 ((and (not float-env) caption)
-		  (concat
-		   (if caption-above-p "" (concat "\n" caption))
-		   (and centerp "\n\\end{center}")
-		   (and fontsize (not centerp) "}")))
-		 (centerp "\n\\end{center}")
-		 (fontsize "}")))))))
+    (format "\\halign{\n%s\\cr\n%s}"
+    	    alignment
+    	    contents)))
 
 (defun org-latex--table.el-table (table info)
   "Return appropriate LaTeX code for a table.el table.
