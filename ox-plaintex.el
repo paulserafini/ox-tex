@@ -43,7 +43,6 @@
     (center-block . org-latex-center-block)
     (clock . org-latex-clock)
     (code . org-latex-code)
-    (drawer . org-latex-drawer)
     (dynamic-block . org-latex-dynamic-block)
     (entity . org-latex-entity)
     (example-block . org-latex-example-block)
@@ -55,7 +54,6 @@
     (headline . org-latex-headline)
     (horizontal-rule . org-latex-horizontal-rule)
     (inline-src-block . org-latex-inline-src-block)
-    (inlinetask . org-latex-inlinetask)
     (italic . org-latex-italic)
     (item . org-latex-item)
     (keyword . org-latex-keyword)
@@ -68,7 +66,6 @@
     (plain-list . org-latex-plain-list)
     (plain-text . org-latex-plain-text)
     (planning . org-latex-planning)
-    (property-drawer . org-latex-property-drawer)
     (quote-block . org-latex-quote-block)
     (radio-target . org-latex-radio-target)
     (section . org-latex-section)
@@ -123,9 +120,7 @@
     (:latex-diary-timestamp-format nil nil org-latex-diary-timestamp-format)
     (:latex-footnote-defined-format nil nil org-latex-footnote-defined-format)
     (:latex-footnote-separator nil nil org-latex-footnote-separator)
-    (:latex-format-drawer-function nil nil org-latex-format-drawer-function)
     (:latex-format-headline-function nil nil org-latex-format-headline-function)
-    (:latex-format-inlinetask-function nil nil org-latex-format-inlinetask-function)
     (:latex-hyperref-template nil nil org-latex-hyperref-template t)
     (:latex-image-default-height nil nil org-latex-image-default-height)
     (:latex-image-default-option nil nil org-latex-image-default-option)
@@ -203,94 +198,6 @@
     ("tr" . "turkish")
     ("uk" . "ukrainian"))
   "Alist between language code and corresponding Babel option.")
-
-;; (defconst org-latex-polyglossia-language-alist
-;;   '(("am" "amharic")
-;;     ("ast" "asturian")
-;;     ("ar" "arabic")
-;;     ("bo" "tibetan")
-;;     ("bn" "bengali")
-;;     ("bg" "bulgarian")
-;;     ("br" "breton")
-;;     ("bt-br" "brazilian")
-;;     ("ca" "catalan")
-;;     ("cop" "coptic")
-;;     ("cs" "czech")
-;;     ("cy" "welsh")
-;;     ("da" "danish")
-;;     ("de" "german" "german")
-;;     ("de-at" "german" "austrian")
-;;     ("de-de" "german" "german")
-;;     ("dv" "divehi")
-;;     ("el" "greek")
-;;     ("en" "english" "usmax")
-;;     ("en-au" "english" "australian")
-;;     ("en-gb" "english" "uk")
-;;     ("en-nz" "english" "newzealand")
-;;     ("en-us" "english" "usmax")
-;;     ("eo" "esperanto")
-;;     ("es" "spanish")
-;;     ("et" "estonian")
-;;     ("eu" "basque")
-;;     ("fa" "farsi")
-;;     ("fi" "finnish")
-;;     ("fr" "french")
-;;     ("fu" "friulan")
-;;     ("ga" "irish")
-;;     ("gd" "scottish")
-;;     ("gl" "galician")
-;;     ("he" "hebrew")
-;;     ("hi" "hindi")
-;;     ("hr" "croatian")
-;;     ("hu" "magyar")
-;;     ("hy" "armenian")
-;;     ("id" "bahasai")
-;;     ("ia" "interlingua")
-;;     ("is" "icelandic")
-;;     ("it" "italian")
-;;     ("kn" "kannada")
-;;     ("la" "latin" "modern")
-;;     ("la-modern" "latin" "modern")
-;;     ("la-classic" "latin" "classic")
-;;     ("la-medieval" "latin" "medieval")
-;;     ("lo" "lao")
-;;     ("lt" "lithuanian")
-;;     ("lv" "latvian")
-;;     ("mr" "maranthi")
-;;     ("ml" "malayalam")
-;;     ("nl" "dutch")
-;;     ("nb" "norsk")
-;;     ("nn" "nynorsk")
-;;     ("nko" "nko")
-;;     ("no" "norsk")
-;;     ("oc" "occitan")
-;;     ("pl" "polish")
-;;     ("pms" "piedmontese")
-;;     ("pt" "portuges")
-;;     ("rm" "romansh")
-;;     ("ro" "romanian")
-;;     ("ru" "russian")
-;;     ("sa" "sanskrit")
-;;     ("hsb" "usorbian")
-;;     ("dsb" "lsorbian")
-;;     ("sk" "slovak")
-;;     ("sl" "slovenian")
-;;     ("se" "samin")
-;;     ("sq" "albanian")
-;;     ("sr" "serbian")
-;;     ("sv" "swedish")
-;;     ("syr" "syriac")
-;;     ("ta" "tamil")
-;;     ("te" "telugu")
-;;     ("th" "thai")
-;;     ("tk" "turkmen")
-;;     ("tr" "turkish")
-;;     ("uk" "ukrainian")
-;;     ("ur" "urdu")
-;;     ("vi" "vietnamese"))
-;;   "Alist between language code and corresponding Polyglossia option")
-
-
 
 (defconst org-latex-table-matrix-macros '(("bordermatrix" . "\\cr")
 					  ("qbordermatrix" . "\\cr")
@@ -832,46 +739,6 @@ returned as-is."
   :type 'alist
   :options '(bold code italic strike-through underline verbatim))
 
-
-;;;; Drawers
-
-(defcustom org-latex-format-drawer-function (lambda (_ contents) contents)
-  "Function called to format a drawer in LaTeX code.
-
-The function must accept two parameters:
-  NAME      the drawer name, like \"LOGBOOK\"
-  CONTENTS  the contents of the drawer.
-
-The function should return the string to be exported.
-
-The default function simply returns the value of CONTENTS."
-  :group 'org-export-latex
-  :version "26.1"
-  :package-version '(Org . "8.3")
-  :type 'function)
-
-
-;;;; Inlinetasks
-
-(defcustom org-latex-format-inlinetask-function
-  'org-latex-format-inlinetask-default-function
-  "Function called to format an inlinetask in LaTeX code.
-
-The function must accept seven parameters:
-  TODO      the todo keyword (string or nil)
-  TODO-TYPE the todo type (symbol: `todo', `done', nil)
-  PRIORITY  the inlinetask priority (integer or nil)
-  NAME      the inlinetask name (string)
-  TAGS      the inlinetask tags (list of strings or nil)
-  CONTENTS  the contents of the inlinetask (string or nil)
-  INFO      the export options (plist)
-
-The function should return the string to be exported."
-  :group 'org-export-latex
-  :type 'function
-  :version "26.1"
-  :package-version '(Org . "8.3"))
-
 ;;;; Compilation
 
 (defcustom org-latex-compiler-file-string "%% Intended LaTeX compiler: %s\n"
@@ -1121,114 +988,6 @@ Return the new header, as a string."
       ;; Then find the \usepackage statement and replace the option.
       (replace-regexp-in-string "\\\\usepackage\\[\\(AUTO\\)\\]{inputenc}"
 				cs header t nil 1))))
-
-(defun org-latex-guess-babel-language (header info)
-  "Set Babel's language according to LANGUAGE keyword.
-
-HEADER is the LaTeX header string.  INFO is the plist used as
-a communication channel.
-
-Insertion of guessed language only happens when Babel package has
-explicitly been loaded.  Then it is added to the rest of
-package's options.
-
-The argument to Babel may be \"AUTO\" which is then replaced with
-the language of the document or `org-export-default-language'
-unless language in question is already loaded.
-
-Return the new header."
-  (let ((language-code (plist-get info :language)))
-    ;; If no language is set or Babel package is not loaded, return
-    ;; HEADER as-is.
-    (if (or (not (stringp language-code))
-	    (not (string-match "\\\\usepackage\\[\\(.*\\)\\]{babel}" header)))
-	header
-      (let ((options (save-match-data
-		       (org-split-string (match-string 1 header) ",[ \t]*")))
-	    (language (cdr (assoc-string language-code
-					 org-latex-babel-language-alist t))))
-	;; If LANGUAGE is already loaded, return header without AUTO.
-	;; Otherwise, replace AUTO with language or append language if
-	;; AUTO is not present.
-	(replace-match
-	 (mapconcat (lambda (option) (if (equal "AUTO" option) language option))
-		    (cond ((member language options) (delete "AUTO" options))
-			  ((member "AUTO" options) options)
-			  (t (append options (list language))))
-		    ", ")
-	 t nil header 1)))))
-
-;; (defun org-latex-guess-polyglossia-language (header info)
-;;   "Set the Polyglossia language according to the LANGUAGE keyword.
-
-;; HEADER is the LaTeX header string.  INFO is the plist used as
-;; a communication channel.
-
-;; Insertion of guessed language only happens when the Polyglossia
-;; package has been explicitly loaded.
-
-;; The argument to Polyglossia may be \"AUTO\" which is then
-;; replaced with the language of the document or
-;; `org-export-default-language'.  Note, the language is really set
-;; using \setdefaultlanguage and not as an option to the package.
-
-;; Return the new header."
-;;   (let ((language (plist-get info :language)))
-;;     ;; If no language is set or Polyglossia is not loaded, return
-;;     ;; HEADER as-is.
-;;     (if (or (not (stringp language))
-;; 	    (not (string-match
-;; 		  "\\\\usepackage\\(?:\\[\\([^]]+?\\)\\]\\){polyglossia}\n"
-;; 		  header)))
-;; 	header
-;;       (let* ((options (org-string-nw-p (match-string 1 header)))
-;; 	     (languages (and options
-;; 			     ;; Reverse as the last loaded language is
-;; 			     ;; the main language.
-;; 			     (nreverse
-;; 			      (delete-dups
-;; 			       (save-match-data
-;; 				 (org-split-string
-;; 				  (replace-regexp-in-string
-;; 				   "AUTO" language options t)
-;; 				  ",[ \t]*"))))))
-;; 	     (main-language-set
-;; 	      (string-match-p "\\\\setmainlanguage{.*?}" header)))
-;; 	(replace-match
-;; 	 (concat "\\usepackage{polyglossia}\n"
-;; 		 (mapconcat
-;; 		  (lambda (l)
-;; 		    (let ((l (or (assoc l org-latex-polyglossia-language-alist)
-;; 				 l)))
-;; 		      (format (if main-language-set "\\setotherlanguage%s{%s}\n"
-;; 				(setq main-language-set t)
-;; 				"\\setmainlanguage%s{%s}\n")
-;; 			      (if (and (consp l) (= (length l) 3))
-;; 				  (format "[variant=%s]" (nth 2 l))
-;; 				"")
-;; 			      (nth 1 l))))
-;; 		  languages
-;; 		  ""))
-;; 	 t t header 0)))))
-
-(defun org-latex--remove-packages (pkg-alist info)
-  "Remove packages based on the current LaTeX compiler.
-
-PKG-ALIST is a list of packages, as in `org-latex-packages-alist'
-and `org-latex-default-packages-alist'.  If the fourth argument
-of a package is neither nil nor a member of the LaTeX compiler
-associated to the document, the package is removed.
-
-Return new list of packages."
-  (let ((compiler (or (plist-get info :latex-compiler) "")))
-    (if (not (member-ignore-case compiler org-latex-compilers)) pkg-alist
-      (cl-remove-if-not
-       (lambda (package)
-	 (pcase package
-	   (`(,_ ,_ ,_ nil) t)
-	   (`(,_ ,_ ,_ ,compilers) (member-ignore-case compiler compilers))
-	   (_ t)))
-       pkg-alist))))
 
 (defun org-latex--find-verb-separator (s)
   "Return a character not used in string S.
@@ -1509,14 +1268,6 @@ channel."
 
 ;;;; Drawer
 
-(defun org-latex-drawer (drawer contents info)
-  "Transcode a DRAWER element from Org to LaTeX.
-CONTENTS holds the contents of the block.  INFO is a plist
-holding contextual information."
-  (let* ((name (org-element-property :drawer-name drawer))
-	 (output (funcall (plist-get info :latex-format-drawer-function)
-			  name contents)))
-    (org-latex--wrap-label drawer output info)))
 
 
 ;;;; Dynamic Block
@@ -1795,49 +1546,6 @@ contextual information."
 				`(("language" ,lst-lang))))))
 	 (concat (format "\\lstinline[%s]" options)
 		 separator code separator))))))
-
-
-;;;; Inlinetask
-
-(defun org-latex-inlinetask (inlinetask contents info)
-  "Transcode an INLINETASK element from Org to LaTeX.
-CONTENTS holds the contents of the block.  INFO is a plist
-holding contextual information."
-  (let ((title (org-export-data (org-element-property :title inlinetask) info))
-	(todo (and (plist-get info :with-todo-keywords)
-		   (let ((todo (org-element-property :todo-keyword inlinetask)))
-		     (and todo (org-export-data todo info)))))
-	(todo-type (org-element-property :todo-type inlinetask))
-	(tags (and (plist-get info :with-tags)
-		   (org-export-get-tags inlinetask info)))
-	(priority (and (plist-get info :with-priority)
-		       (org-element-property :priority inlinetask)))
-	(contents (concat (org-latex--label inlinetask info) contents)))
-    (funcall (plist-get info :latex-format-inlinetask-function)
-	     todo todo-type priority title tags contents info)))
-
-(defun org-latex-format-inlinetask-default-function
-    (todo _todo-type priority title tags contents _info)
-  "Default format function for inlinetasks.
-See `org-latex-format-inlinetask-function' for details."
-  (let ((full-title
-	 (concat (when todo (format "\\textbf{\\textsf{\\textsc{%s}}} " todo))
-		 (when priority (format "\\framebox{\\#%c} " priority))
-		 title
-		 (when tags
-		   (format "\\hfill{}\\textsc{%s}"
-			   (org-make-tag-string
-			    (mapcar #'org-latex--protect-text tags)))))))
-    (concat "\\begin{center}\n"
-	    "\\fbox{\n"
-	    "\\begin{minipage}[c]{.6\\textwidth}\n"
-	    full-title "\n\n"
-	    (and (org-string-nw-p contents)
-		 (concat "\\rule[.8em]{\\textwidth}{2pt}\n\n" contents))
-	    "\\end{minipage}\n"
-	    "}\n"
-	    "\\end{center}")))
-
 
 ;;;; Italic
 
@@ -2376,12 +2084,6 @@ information."
 
 ;;;; Property Drawer
 
-(defun org-latex-property-drawer (_property-drawer contents _info)
-  "Transcode a PROPERTY-DRAWER element from Org to LaTeX.
-CONTENTS holds the contents of the drawer.  INFO is a plist
-holding contextual information."
-  (and (org-string-nw-p contents)
-       (format "\\begin{verbatim}\n%s\\end{verbatim}" contents)))
 
 
 ;;;; Pseudo Element: LaTeX Matrices
