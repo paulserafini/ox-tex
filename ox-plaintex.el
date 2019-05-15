@@ -1972,7 +1972,7 @@ holding contextual information."
 		  (when (org-export-first-sibling-p headline info)
 		    (format "\\begin{%s}\n" (if numberedp 'enumerate 'itemize)))
 		  ;; Itemize headline
-		  "\\li"
+		  "\\item"
 		  (and full-text
 		       (string-match-p "\\`[ \t]*\\[" full-text)
 		       "\\relax")
@@ -2194,7 +2194,7 @@ contextual information."
 			(org-element-property :tag item) info))
 	      "")))
     (concat counter
-	    "\\item"
+	    "\\li"
 	    (cond
 	     ((and checkbox tag)
 	      (format "[{%s %s}] %s" checkbox tag tag-footnotes))
