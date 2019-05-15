@@ -3232,7 +3232,7 @@ This function assumes TABLE has `org' as its `:type' property and
 					  width) "")
 			       alignment
 			       contents))
-		      (t (format "\\%s{%s\n%s &\n%s}"
+		      (t (format "\\%s{%s\n%s \\cr\n%s}"
 				 table-env
 				 (if width (format "{%s}" width) "")
 				 alignment
