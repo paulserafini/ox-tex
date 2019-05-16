@@ -77,12 +77,38 @@ holding export options."
        (format "\\date{%s}\n" (org-export-data date info)))
 
      ;; Macro definitions
+     "\\input eplain.tex\n"
      "\\def\\beginquote{\\begingroup\\par\\narrower\\smallskip\\noindent}\n"
      "\\def\\endquote{\\smallskip\\endgroup\\noindent}\n"
+     "\def\author#1{\centerline{#1}\medskip}\n"
+     "\font\fourteenrm= cmr10 at 14pt%\n"
+     "\def\title#1{\centerpar{\fourteenrm#1}\medskip}\n"
+
+     ;; Strike-through macro
+     ;; https://tex.stackexchange.com/a/93794
      "\\newbox\\TestBox\n"
      "\\def\\sout#1{\\setbox\\TestBox=\\hbox{#1}%\n"
      "    \\leavevmode\\rlap{\\vrule height 2.5pt depth-1.75pt width\\wd\\TestBox}%\n"
      "    \\box\\TestBox\\ }\n"
+
+     "\\newcount\\sectionNumber\n"
+     "\\def\\section #1\n"
+     "\\par{%\n"
+     "  \\bigskip\n"
+     "  \\subsectioncount=0\n"
+     "  \\advance \\sectionNumber by 1\n"
+     "  {\\noindent\\the\\sectionNumber.\\ #1}\n"
+     "  \\smallskip\\noindent\n"
+     "}\n"
+
+    "\\newcount\\subsectioncount\n"
+    "\\def\\subsection #1\n"
+    "\\par{%\n"
+    "\\medskip\n"
+    "\\advance \\subsectioncount by 1\n"
+    "{\\noindent\\the\\sectionNumber.\\the\\subsectioncount\\ #1}\n"
+    "\\smallskip\\noindent\n"
+    "}\n"
 
      ;; Title and subtitle.
      (let* ((subtitle (plist-get info :subtitle))
