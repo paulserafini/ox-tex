@@ -8,6 +8,7 @@ This is an export backend for Org which provides plain TeX (as opposed to LaTeX)
  - Lists
  - Quote blocks
  - Source blocks
+ - Center blocks
 
 * Installation
 

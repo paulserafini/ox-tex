@@ -18,6 +18,7 @@
     (:plaintex-text-markup-alist nil nil org-plaintex-text-markup-alist))
   :translate-alist
   '((bold . org-plaintex-bold)
+    (center-block . org-plaintex-center-block)
     (code . org-plaintex-code)
     (footnote-reference . org-plaintex-footnote-reference)
     (headline . org-latex-headline)
@@ -644,6 +645,13 @@ holding contextual information."
 	    (format section-fmt full-text
 		    (concat headline-label pre-blanks contents))))))))
 
+;;; Center block
+(defun org-plaintex-center-block (center-block contents info)
+  "Transcode a CENTER-BLOCK element from Org to LaTeX.
+CONTENTS holds the contents of the center block.  INFO is a plist
+holding contextual information."
+  (org-latex--wrap-label
+   center-block (format "\\begincenter\n%s\\endcenter" contents) info))
 
 ;;; Export to a buffer
 (defun org-plaintex-export-as-latex
