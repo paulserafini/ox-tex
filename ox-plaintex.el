@@ -57,33 +57,31 @@ holding export options."
   (let ((title (org-export-data (plist-get info :title) info))
         (spec (org-latex--format-spec info)))
     (concat
-     ;; Time-stamp.
-     (and (plist-get info :time-stamp-file)
-          (format-time-string "%% Created %Y-%m-%d %a %H:%M\n"))
-     ;; LaTeX compiler.
-     (org-latex--insert-compiler info)
-     ;; Document class and packages.
-     (org-latex-make-preamble info)
-     ;; Possibly limit depth for headline numbering.
-     (let ((sec-num (plist-get info :section-numbers)))
-       (when (integerp sec-num)
-         (format "\\setcounter{secnumdepth}{%d}\n" sec-num)))
-     ;; Author.
-     (let ((author (and (plist-get info :with-author)
-                        (let ((auth (plist-get info :author)))
-                          (and auth (org-export-data auth info))))))
-       (format "\\name{%s}{}\n" author))
-     ;; Date.
-     (let ((date (and (plist-get info :with-date) (org-export-get-date info))))
-       (format "\\date{%s}\n" (org-export-data date info)))
 
      ;; Macro definitions
      "\\input eplain.tex\n"
+
+     "\\def\\begincenter{\n"
+     "\\par\n"
+     "\\begingroup\n"
+     "\\leftskip=0pt plus 1fil\n"
+     "\\rightskip=\\leftskip\n"
+     "\\parindent=0pt\n"
+     "\\parfillskip=0pt\n"
+     "}\n"
+     "\\def\\endcenter{\n"
+     "\\par\n"
+     "\\endgroup\n"
+     "}\n"
+     "\\long\\def\\centerpar#1{\\begincenter#1\\endcenter}\n"
+
+     "\\font\\fourteenrm= cmr10 at 14pt\n"
+     "\\def\\title#1{\\centerpar{\\fourteenrm#1}\\medskip}\n"
+     "\\def\\author#1{\\centerline{#1}\\medskip}\n"
+     "\\def\\date{\\centerline{#1}}\n"
+
      "\\def\\beginquote{\\begingroup\\par\\narrower\\smallskip\\noindent}\n"
      "\\def\\endquote{\\smallskip\\endgroup\\noindent}\n"
-     "\def\author#1{\centerline{#1}\medskip}\n"
-     "\font\fourteenrm= cmr10 at 14pt%\n"
-     "\def\title#1{\centerpar{\fourteenrm#1}\medskip}\n"
 
      ;; Strike-through macro
      ;; https://tex.stackexchange.com/a/93794
@@ -92,24 +90,37 @@ holding export options."
      "    \\leavevmode\\rlap{\\vrule height 2.5pt depth-1.75pt width\\wd\\TestBox}%\n"
      "    \\box\\TestBox\\ }\n"
 
-     "\\newcount\\sectionNumber\n"
+     "\\newcount\\sectioncount\n"
      "\\def\\section #1\n"
-     "\\par{%\n"
-     "  \\bigskip\n"
+     "\\par{\\bigskip\n"
      "  \\subsectioncount=0\n"
-     "  \\advance \\sectionNumber by 1\n"
-     "  {\\noindent\\the\\sectionNumber.\\ #1}\n"
+     "  \\advance \\sectioncount by 1\n"
+     "  {\\noindent\\the\\sectioncount.\\ #1}\n"
      "  \\smallskip\\noindent\n"
      "}\n"
 
     "\\newcount\\subsectioncount\n"
     "\\def\\subsection #1\n"
-    "\\par{%\n"
-    "\\medskip\n"
-    "\\advance \\subsectioncount by 1\n"
-    "{\\noindent\\the\\sectionNumber.\\the\\subsectioncount\\ #1}\n"
-    "\\smallskip\\noindent\n"
+    "\\par{\\medskip\n"
+    "  \\advance \\subsectioncount by 1\n"
+    "  {\\noindent\\the\\sectioncount.\\the\\subsectioncount\\ #1}\n"
+    "  \\smallskip\\noindent\n"
     "}\n"
+
+     ;; Time-stamp.
+     (and (plist-get info :time-stamp-file)
+          (format-time-string "%% Created %Y-%m-%d %a %H:%M\n"))
+
+     ;; LaTeX compiler.
+     (org-latex--insert-compiler info)
+
+     ;; Document class and packages.
+     (org-latex-make-preamble info)
+
+     ;; Possibly limit depth for headline numbering.
+     (let ((sec-num (plist-get info :section-numbers)))
+       (when (integerp sec-num)
+         (format "\\setcounter{secnumdepth}{%d}\n" sec-num)))
 
      ;; Title and subtitle.
      (let* ((subtitle (plist-get info :subtitle))
@@ -123,23 +134,32 @@ holding export options."
                 (if separate "" (or formatted-subtitle "")))
         (when (and separate subtitle)
           (concat formatted-subtitle "\n"))))
+
+     ;; Author.
+     (let ((author (and (plist-get info :with-author)
+                        (let ((auth (plist-get info :author)))
+                          (and auth (org-export-data auth info))))))
+       (format "\\author{%s}\n" author))
+
+     ;; Date.
+     (let ((date (and (plist-get info :with-date) (org-export-get-date info))))
+       (format "\\date{%s}\n" (org-export-data date info)))
+
      ;; Hyperref options.
      (let ((template (plist-get info :latex-hyperref-template)))
        (and (stringp template)
             (format-spec template spec)))
-     ;; Title command.
-     (let* ((title-command (plist-get info :latex-title-command))
-            (command (and (stringp title-command)
-                          (format-spec title-command spec))))
-       (org-element-normalize-string
-        (cond ((not (plist-get info :with-title)) nil)
-              ((string= "" title) nil)
-              ((not (stringp command)) nil)
-              ((string-match "\\(?:[^%]\\|^\\)%s" command)
-               (format command title))
-              (t command))))
+
+     ;; ;; Table of contents.
+     ;; (let ((depth (plist-get info :with-toc)))
+     ;;   (when depth
+     ;; 	 (concat (when (integerp depth)
+     ;; 		   (format "\\setcounter{tocdepth}{%d}\n" depth))
+     ;; 		 (plist-get info :latex-toc-command))))
+
      ;; Document's body.
      contents
+
      ;; Creator.
      (and (plist-get info :with-creator)
           (concat (plist-get info :creator) "\n"))
