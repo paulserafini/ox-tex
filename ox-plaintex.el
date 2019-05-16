@@ -76,8 +76,13 @@ holding export options."
      (let ((date (and (plist-get info :with-date) (org-export-get-date info))))
        (format "\\date{%s}\n" (org-export-data date info)))
 
+     ;; Macro definitions
      "\\def\\beginquote{\\begingroup\\par\\narrower\\smallskip\\noindent}\n"
      "\\def\\endquote{\\smallskip\\endgroup\\noindent}\n"
+     "\\newbox\\TestBox\n"
+     "\\def\\sout#1{\\setbox\\TestBox=\\hbox{#1}%\n"
+     "    \\leavevmode\\rlap{\\vrule height 2.5pt depth-1.75pt width\\wd\\TestBox}%\n"
+     "    \\box\\TestBox\\ }\n"
 
      ;; Title and subtitle.
      (let* ((subtitle (plist-get info :subtitle))
@@ -119,7 +124,7 @@ holding export options."
 (defcustom org-plaintex-text-markup-alist '((bold . "{\\bf %s}")
 					    (code . "{\\tt %s}")
 					    (italic . "{\\it %s}")
-					    (strike-through . "%s")
+					    (strike-through . "\\sout{%s}")
 					    (underline . "{\\underline %s}")
 					    (verbatim . "{\\tt %s}"))
   "Alist of LaTeX expressions to convert text markup."
