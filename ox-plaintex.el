@@ -78,7 +78,7 @@ holding export options."
      "\\font\\fourteenrm= cmr10 at 14pt\n"
      "\\def\\title#1{\\centerpar{\\fourteenrm#1}\\medskip}\n"
      "\\def\\author#1{\\centerline{#1}\\medskip}\n"
-     "\\def\\date{\\centerline{#1}}\n"
+     "\\def\\date#1{\\centerline{#1}}\n"
 
      "\\def\\beginquote{\\begingroup\\par\\narrower\\smallskip\\noindent}\n"
      "\\def\\endquote{\\smallskip\\endgroup\\noindent}\n"
@@ -419,7 +419,6 @@ contextual information."
 		  ;; When there are footnote references within the
 		  ;; table, insert their definition just after it.
 		  (org-latex--delayed-footnotes-definitions table info)))))))
-
 
 ;;; Quote
 (defun org-plaintex-quote-block (quote-block contents info)
