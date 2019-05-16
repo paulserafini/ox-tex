@@ -39,8 +39,8 @@
 	       '("plaintex"
 		 "[NO-DEFAULT-PACKAGES]
                   [NO-PACKAGES]"
-		 ("\\section %s" . "\\section %s")
-		 ("\\subsection %s" . "\\subsection %s"))))
+		 ("\n\\section %s" . "\n\\section %s")
+		 ("\n\\subsection %s" . "\n\\subsection %s"))))
 
 (defgroup org-export-plaintex nil
   "Options specific for using the plaintex class in LaTeX export."
