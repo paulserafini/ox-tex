@@ -1,0 +1,14 @@
+* ox-plaintex
+
+This is an export backend for Org, which enables plain TeX (as opposed to LaTeX) export. It is derived from ox-latex. As yet, it enables export of:
+ - Emphasis/monospace markup (bold, italic, underlined, verbatim, and code)
+ - Footnotes
+ - Superscripts and subscripts
+ - Tables
+ - Lists
+ - Quote blocks
+ - Source blocks
+To install it, put ox-plaintex.el in a directory which is included in your ~load path~, then then add the following line to your init file:
+#+BEGIN_EXAMPLE
+(require 'ox-plaintex)
+#+END_EXAMPLE
