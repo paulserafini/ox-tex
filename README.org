@@ -15,4 +15,4 @@ To install ox-plaintex, put ox-plaintex.el in a directory which is included in y
 #+BEGIN_EXAMPLE
 (require 'ox-plaintex)
 #+END_EXAMPLE
-For TeX compilation you also need to install the [[https://tug.org/eplain/doc/eplain.html][Eplain]] macro package, if you don't have it. On Debian and Ubuntu it is part of the "texlive-formats-extra" package.
+For TeX compilation you may also need to install the [[https://tug.org/eplain/doc/eplain.html][Eplain]] macro package. On Debian and Ubuntu, Eplain is part of the "texlive-formats-extra" package.
