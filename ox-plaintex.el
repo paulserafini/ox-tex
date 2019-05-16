@@ -22,6 +22,7 @@
     (footnote-reference . org-plaintex-footnote-reference)
     (italic . org-plaintex-italic)
     (latex-math-block . org-plaintex-math-block)
+    (item . org-plaintex-item)
     (plain-list . org-plaintex-plain-list)
     (quote-block . org-plaintex-quote-block)
     (src-block . org-plaintex-src-block)
@@ -203,8 +204,7 @@ INFO is a plist used as a communication channel.  See
       ;; Else use format string.
       (t (format fmt text)))))
 
-
-;;; Plain List
+;; Plain List
 (defun org-plaintex-plain-list (plain-list contents info)
   "Transcode a PLAIN-LIST element from Org to LaTeX.
 CONTENTS is the contents of the list.  INFO is a plist holding
@@ -224,6 +224,67 @@ contextual information."
 	     contents
 	     latex-type)
      info)))
+
+;; List counters
+(defun org-plaintex-item (item contents info)
+  "Transcode an ITEM element from Org to LaTeX.
+CONTENTS holds the contents of the item.  INFO is a plist holding
+contextual information."
+  (let* ((counter
+	  (let ((count (org-element-property :counter item))
+		(level
+		 ;; Determine level of current item to determine the
+		 ;; correct LaTeX counter to use (enumi, enumii...).
+		 (let ((parent item) (level 0))
+		   (while (memq (org-element-type
+				 (setq parent (org-export-get-parent parent)))
+				'(plain-list item))
+		     (when (and (eq (org-element-type parent) 'plain-list)
+				(eq (org-element-property :type parent)
+				    'ordered))
+		       (cl-incf level)))
+		   level)))
+	    (and count
+		 (< level 5)
+		 (format "\\setcounter{enum%s}{%s}\n"
+			 (nth (1- level) '("i" "ii" "iii" "iv"))
+			 (1- count)))))
+	 (checkbox (cl-case (org-element-property :checkbox item)
+		     (on "$\\boxtimes$")
+		     (off "$\\square$")
+		     (trans "$\\boxminus$")))
+	 (tag (let ((tag (org-element-property :tag item)))
+		(and tag (org-export-data tag info))))
+	 ;; If there are footnotes references in tag, be sure to add
+	 ;; their definition at the end of the item.  This workaround
+	 ;; is necessary since "\footnote{}" command is not supported
+	 ;; in tags.
+	 (tag-footnotes
+	  (or (and tag (org-latex--delayed-footnotes-definitions
+			(org-element-property :tag item) info))
+	      "")))
+    (concat counter
+	    "\\li"
+	    (cond
+	     ((and checkbox tag)
+	      (format "[{%s %s}] %s" checkbox tag tag-footnotes))
+	     ((or checkbox tag)
+	      (format "[{%s}] %s" (or checkbox tag) tag-footnotes))
+	     ;; Without a tag or a check-box, if CONTENTS starts with
+	     ;; an opening square bracket, add "\relax" to "\item",
+	     ;; unless the brackets comes from an initial export
+	     ;; snippet (i.e. it is inserted willingly by the user).
+	     ((and contents
+		   (string-match-p "\\`[ \t]*\\[" contents)
+		   (not (let ((e (car (org-element-contents item))))
+			  (and (eq (org-element-type e) 'paragraph)
+			       (let ((o (car (org-element-contents e))))
+				 (and (eq (org-element-type o) 'export-snippet)
+				      (eq (org-export-snippet-backend o)
+					  'latex)))))))
+	      "\\relax ")
+	     (t " "))
+	    (and contents (org-trim contents)))))
 
 
 ;; Make halign the default table environment
