@@ -75,6 +75,9 @@ holding export options."
      (let ((date (and (plist-get info :with-date) (org-export-get-date info))))
        (format "\\date{%s}\n" (org-export-data date info)))
 
+     "\\def\\beginquote{\\begingroup\\par\\narrower\\smallskip\\noindent}\n"
+     "\\def\\endquote{\\smallskip\\endgroup\\noindent}\n"
+
      ;; Title and subtitle.
      (let* ((subtitle (plist-get info :subtitle))
             (formatted-subtitle
@@ -311,7 +314,7 @@ contextual information."
 CONTENTS holds the contents of the block.  INFO is a plist
 holding contextual information."
   (org-latex--wrap-label
-   quote-block (format "\n{\\narrower\\smallskip\\noindent %s \\smallskip}\n" contents) info))
+   quote-block (format "\\beginquote\n%s\\endquote" contents) info))
 
 ;;; Subscript
 (defun org-plaintex-subscript (_subscript contents _info)
