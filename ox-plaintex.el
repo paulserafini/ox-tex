@@ -59,10 +59,9 @@ holding export options."
         (spec (org-latex--format-spec info)))
     (concat
 
-     ;; Macro definitions
-     "\\input eplain.tex\n"
+     "\\input eplain.tex\n\n"
 
-     "\\def\\begincenter{\n"
+     "\\def\\begincenter{%\n"
      "\\par\n"
      "\\begingroup\n"
      "\\leftskip=0pt plus 1fil\n"
@@ -70,26 +69,26 @@ holding export options."
      "\\parindent=0pt\n"
      "\\parfillskip=0pt\n"
      "}\n"
-     "\\def\\endcenter{\n"
+     "\\def\\endcenter{%\n"
      "\\par\n"
      "\\endgroup\n"
      "}\n"
-     "\\long\\def\\centerpar#1{\\begincenter#1\\endcenter}\n"
+     "\\long\\def\\centerpar#1{\\begincenter#1\\endcenter}\n\n"
 
-     "\\font\\fourteenrm= cmr10 at 14pt\n"
+     "\\font\\fourteenrm= cmr10 at 14pt%\n"
      "\\def\\title#1{\\centerpar{\\fourteenrm#1}\\medskip}\n"
      "\\def\\author#1{\\centerline{#1}\\medskip}\n"
-     "\\def\\date#1{\\centerline{#1}}\n"
+     "\\def\\date#1{\\centerline{#1}}\n\n"
 
      "\\def\\beginquote{\\begingroup\\par\\narrower\\smallskip\\noindent}\n"
-     "\\def\\endquote{\\smallskip\\endgroup\\noindent}\n"
+     "\\def\\endquote{\\smallskip\\endgroup\\noindent}\n\n"
 
      ;; Strike-through macro
      ;; https://tex.stackexchange.com/a/93794
      "\\newbox\\TestBox\n"
      "\\def\\sout#1{\\setbox\\TestBox=\\hbox{#1}%\n"
      "    \\leavevmode\\rlap{\\vrule height 2.5pt depth-1.75pt width\\wd\\TestBox}%\n"
-     "    \\box\\TestBox\\ }\n"
+     "    \\box\\TestBox\\ }\n\n"
 
      "\\newcount\\sectioncount\n"
      "\\def\\section #1\n"
@@ -98,7 +97,7 @@ holding export options."
      "  \\advance \\sectioncount by 1\n"
      "  {\\noindent\\the\\sectioncount.\\ #1}\n"
      "  \\smallskip\\noindent\n"
-     "}\n"
+     "}\n\n"
 
     "\\newcount\\subsectioncount\n"
     "\\def\\subsection #1\n"
@@ -106,7 +105,7 @@ holding export options."
     "  \\advance \\subsectioncount by 1\n"
     "  {\\noindent\\the\\sectioncount.\\the\\subsectioncount\\ #1}\n"
     "  \\smallskip\\noindent\n"
-    "}\n"
+    "}\n\n"
 
      ;; Time-stamp.
      (and (plist-get info :time-stamp-file)
