@@ -20,6 +20,7 @@
   '((bold . org-plaintex-bold)
     (center-block . org-plaintex-center-block)
     (code . org-plaintex-code)
+    (example-block . org-plaintex-example-block)
     (footnote-reference . org-plaintex-footnote-reference)
     (headline . org-latex-headline)
     (italic . org-plaintex-italic)
@@ -467,6 +468,18 @@ contextual information."
 	   (listings (plist-get info :latex-listings)))
       (concat (format "\\verbatim|%s|endverbatim"
 		      (org-export-format-code-default src-block info))))))
+
+;;; Example Block
+(defun org-plaintex-example-block (example-block _contents info)
+  "Transcode an EXAMPLE-BLOCK element from Org to LaTeX.
+CONTENTS is nil.  INFO is a plist holding contextual
+information."
+  (when (org-string-nw-p (org-element-property :value example-block))
+      (org-latex--wrap-label
+       example-block
+       (format "\\verbatim|%s|\\endverbatim"
+	       (org-export-format-code-default example-block info))
+       info)))
 
 ;;; Inline math
 (defun org-plaintex-math-block (_math-block contents _info)

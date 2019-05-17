@@ -6,9 +6,7 @@ This is an export backend for Org which provides plain TeX (as opposed to LaTeX)
  - Superscripts and subscripts
  - Tables
  - Lists
- - Quote blocks
- - Source blocks
- - Center blocks
+ - Quote, source, center, and example blocks
 Anything else will be exported in LaTeX format.
 
 * Installation
