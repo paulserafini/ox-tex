@@ -1,7 +1,5 @@
 * ox-plaintex
 
-+word+
-
 This is an export backend for Org which provides plain TeX (as opposed to LaTeX) export. It is derived from ox-latex. As yet, it enables the export of:
  - Emphasis and monospace markup (*bold*, /italic/, _underlined_, +strike-through+, =verbatim=, and ~code~)
  - Footnotes
