@@ -15,6 +15,7 @@
 	(?t "As plain TeX file" org-plaintex-export-to-latex)))
   :options-alist
   '((:latex-class "LATEX_CLASS" nil "plaintex" t)
+    (:abstract "ABSTRACT" nil nil parse)
     (:plaintex-text-markup-alist nil nil org-plaintex-text-markup-alist))
   :translate-alist
   '((bold . org-plaintex-bold)
@@ -157,6 +158,11 @@ holding export options."
      ;; 	 (concat (when (integerp depth)
      ;; 		   (format "\\setcounter{tocdepth}{%d}\n" depth))
      ;; 		 (plist-get info :latex-toc-command))))
+
+     ;; Add abstract if defined
+     (let ((abstract (plist-get info :abstract)))
+       (when abstract
+         (format "\\abstract{%s}\n" abstract)))
 
      ;; Document's body.
      contents
