@@ -175,6 +175,12 @@ holding export options."
          (format "\\abstract{%s}\n"
 		 (org-export-data (plist-get info :abstract) info))))
 
+     ;; Add abstract if defined
+     (let ((keywords (plist-get info :keywords)))
+       (when keywords
+         (format "\\keywords{%s}\n"
+		 (org-export-data (plist-get info :keywords) info))))
+
      ;; Document's body.
      contents
 
