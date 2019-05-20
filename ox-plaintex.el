@@ -44,7 +44,8 @@
 		 "[NO-DEFAULT-PACKAGES]
                   [NO-PACKAGES]"
 		 ("\n\\section %s" . "\n\\section %s")
-		 ("\n\\subsection %s" . "\n\\subsection %s"))))
+		 ("\n\\subsection %s" . "\n\\subsection %s")
+		 ("\n\\subsubsection %s" . "\n\\subsubsection %s"))))
 
 (defgroup org-export-plaintex nil
   "Options specific for using the plaintex class in LaTeX export."
@@ -103,9 +104,18 @@ holding export options."
 
     "\\newcount\\subsectioncount\n"
     "\\def\\subsection #1\n"
-    "\\par{\\medskip\n"
+    "\\par{\\smallskip\n"
     "  \\advance \\subsectioncount by 1\n"
+    "  \\subsubsectioncount=0\n"
     "  {\\noindent\\the\\sectioncount.\\the\\subsectioncount\\ #1}\n"
+    "  \\smallskip\\noindent\n"
+    "}\n\n"
+
+    "\\newcount\\subsubsectioncount\n"
+    "\\def\\subsubsection #1\n"
+    "\\par{\\smallskip\n"
+    "  \\advance \\subsubsectioncount by 1\n"
+    "  {\\noindent\\the\\sectioncount.\\the\\subsectioncount.\\the\\subsubsectioncount\\ #1}\n"
     "  \\smallskip\\noindent\n"
     "}\n\n"
 
