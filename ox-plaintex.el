@@ -172,7 +172,8 @@ holding export options."
      ;; Add abstract if defined
      (let ((abstract (plist-get info :abstract)))
        (when abstract
-         (format "\\abstract{%s}\n" abstract)))
+         (format "\\abstract{%s}\n"
+		 (org-export-data (plist-get info :abstract) info))))
 
      ;; Document's body.
      contents
