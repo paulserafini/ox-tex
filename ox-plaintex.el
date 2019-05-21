@@ -53,14 +53,13 @@ contextual information."
        ;; halign
        (t (org-plaintex--org-table table contents info))))))
 
-
 (defun org-plaintex-matrices (matrices contents _info)
   "Transcode a MATRICES element from Org to LaTeX.
 CONTENTS is a string.  INFO is a plist used as a communication
 channel."
   (format (cl-case (org-element-property :markup matrices)
 	    (inline "$%s$")
-	    (t "$$\n%s\n$$"))
+	    (t "$$\n%s$$"))
 	  contents))
 
 (defun org-plaintex--math-table (table info)
