@@ -419,6 +419,56 @@ This function assumes TABLE has `org' as its `:type' property and
     	    alignment
     	    contents)))
 
+(defun org-latex-matrices (matrices contents _info)
+  "Transcode a MATRICES element from Org to LaTeX.
+CONTENTS is a string.  INFO is a plist used as a communication
+channel."
+  (format (cl-case (org-element-property :markup matrices)
+	    (inline "\\(%s\\)")
+	    (equation "\\begin{equation}\n%s\\end{equation}")
+	    (t "$$\n%s$$"))
+	  contents))
+
+(defun org-plaintex--math-table (table info)
+  "Return appropriate LaTeX code for a matrix.
+
+TABLE is the table type element to transcode.  INFO is a plist
+used as a communication channel.
+
+This function assumes TABLE has `org' as its `:type' property and
+`inline-math' or `math' as its `:mode' attribute."
+  (let* ((attr (org-export-read-attribute :attr_latex table))
+	 (env (or (plist-get attr :environment)
+		  (plist-get info :latex-default-table-environment)))
+	 (contents
+	  (mapconcat
+	   (lambda (row)
+	     (if (eq (org-element-property :type row) 'rule) "\\hline"
+	       ;; Return each cell unmodified.
+	       (concat
+		(mapconcat
+		 (lambda (cell)
+		   (substring (org-element-interpret-data cell) 0 -1))
+		 (org-element-map row 'table-cell #'identity info) "&")
+		(or (cdr (assoc env org-latex-table-matrix-macros)) "\\\\")
+		"\n")))
+	   (org-element-map table 'table-row #'identity info) "")))
+    (concat
+     ;; Prefix.
+     (plist-get attr :math-prefix)
+     ;; Environment.  Also treat special cases.
+     (cond ((member env '("array" "tabular"))
+	    (format "\\begin{%s}{%s}\n%s\\end{%s}"
+		    env (org-latex--align-string table info t) contents env))
+	   ((assoc env org-latex-table-matrix-macros)
+	    (format "\\%s%s{\n%s}"
+		    env
+		    (or (plist-get attr :math-arguments) "")
+		    contents))
+	   (t (format "\\%s{\n%s}" env contents)))
+     ;; Suffix.
+     (plist-get attr :math-suffix))))
+
 (defun org-plaintex-table (table contents info)
   "Transcode a TABLE element from Org to LaTeX.
 CONTENTS is the contents of the table.  INFO is a plist holding
@@ -437,7 +487,7 @@ contextual information."
 			   `(table nil ,@(org-element-contents table))))))
        ;; Case 2: Matrix.
        ((or (string= type "math") (string= type "inline-math"))
-	(org-latex--math-table table info))
+	(org-plaintex--math-table table info))
        ;; Case 3: Standard table.
        (t (concat (org-plaintex--org-table table contents info)
 		  ;; When there are footnote references within the
