@@ -8,6 +8,214 @@
 (defvar org-latex-packages-alist)
 (defvar orgtbl-exp-regexp)
 
+;;; Add a minimal class with plain TeX style sections
+(unless (assoc "plaintex" org-latex-classes)
+  (add-to-list 'org-latex-classes
+	       '("plaintex"
+		 "[NO-DEFAULT-PACKAGES]
+                  [NO-PACKAGES]"
+		 ("\n\\section %s" . "\n\\section %s")
+		 ("\n\\subsection %s" . "\n\\subsection %s")
+		 ("\n\\subsubsection %s" . "\n\\subsubsection %s"))))
+
+(defgroup org-export-plaintex nil
+  "Options specific for using the plaintex class in LaTeX export."
+  :tag "Org plaintex"
+  :group 'org-export
+  :version "25.3")
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;  Alignment                                                               ;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; Make halign the default table environment
+(defcustom org-plaintex-default-table-environment "halign"
+  "Default environment used to build tables."
+  :group 'org-export-plaintex
+  :version "24.4"
+  :package-version '(Org . "8.0")
+  :type 'string)
+
+;;; Convert table to halign or matrix
+(defun org-plaintex-table (table contents info)
+  "Transcode a TABLE element from Org to LaTeX.
+CONTENTS is the contents of the table.  INFO is a plist holding
+contextual information."
+  (if (eq (org-element-property :type table) 'table.el)
+      ;; "table.el" table.  Convert it using appropriate tools.
+      (org-latex--table.el-table table info)
+    (let ((type (or (org-export-read-attribute :attr_latex table :environment)
+		    (plist-get info :latex-default-table-environment))))
+      (cond
+       ;; matrix
+       ((string= type "matrix")
+	(org-plaintex--math-table table info))
+       ;; halign
+       (t (org-plaintex--org-table table contents info))))))
+
+
+(defun org-plaintex-matrices (matrices contents _info)
+  "Transcode a MATRICES element from Org to LaTeX.
+CONTENTS is a string.  INFO is a plist used as a communication
+channel."
+  (format (cl-case (org-element-property :markup matrices)
+	    (inline "$%s$")
+	    (t "$$\n%s\n$$"))
+	  contents))
+
+(defun org-plaintex--math-table (table info)
+  "Return appropriate LaTeX code for a matrix.
+
+TABLE is the table type element to transcode.  INFO is a plist
+used as a communication channel.
+
+This function assumes TABLE has `org' as its `:type' property and
+`inline-math' or `math' as its `:mode' attribute."
+  (let* ((attr (org-export-read-attribute :attr_latex table))
+	 (env (or (plist-get attr :environment)
+		  (plist-get info :latex-default-table-environment)))
+	 (contents
+	  (mapconcat
+	   (lambda (row)
+	     (if (eq (org-element-property :type row) 'rule) "\\hline"
+	       ;; Return each cell unmodified.
+	       (concat
+		(mapconcat
+		 (lambda (cell)
+		   (substring (org-element-interpret-data cell) 0 -1))
+		 (org-element-map row 'table-cell #'identity info) "&")
+		(or (cdr (assoc env org-latex-table-matrix-macros)) "\\\\")
+		"\n")))
+	   (org-element-map table 'table-row #'identity info) "")))
+    (format "\\matrix{\n%s}" contents)))
+
+;; Plain TeX style table alignment
+(defun org-plaintex--align-string (table info &optional math?)
+  "Return an appropriate LaTeX alignment string.
+TABLE is the considered table.  INFO is a plist used as
+a communication channel.  When optional argument MATH? is
+non-nil, TABLE is meant to be a matrix, where all cells are
+centered."
+  (or (org-export-read-attribute :attr_latex table :align)
+      (let (align)
+	;; Extract column groups and alignment from first (non-rule)
+	;; row.
+	(org-element-map
+	    (org-element-map table 'table-row
+	      (lambda (row)
+		(and (eq (org-element-property :type row) 'standard) row))
+	      info 'first-match)
+	    'table-cell
+	  (lambda (cell)
+	    (let ((borders (org-export-table-cell-borders cell info)))
+	      ;; Check left border for the first cell only.
+	      (when (and (memq 'left borders) (not align))
+		(push "|" align))
+	      (push (if math? "\\enskip\\hfil#\\hfil\\enskip"	;center cells in matrices
+		      (cl-case (org-export-table-cell-alignment cell info)
+			(left "\\enskip#\\hfil\\enskip")
+			(right "\\enskip\\hfil#\\enskip")
+			(center "\\enskip\\hfil#\\hfil\\enskip")))
+		    align)
+	      (when (memq 'right borders) (push "|" align))))
+	  info)
+	(string-join align " & "))))
+
+(defun org-plaintex--org-table (table contents info)
+  "Return appropriate LaTeX code for an Org table.
+
+TABLE is the table type element to transcode.  CONTENTS is its
+contents, as a string.  INFO is a plist used as a communication
+channel.
+
+This function assumes TABLE has `org' as its `:type' property and
+`table' as its `:mode' attribute."
+  (let* ((alignment (org-plaintex--align-string table info)))
+    ;; Prepare the final format string for the table.
+    (format "$$\\vbox{\\halign{\n\\tstrut%s\\cr\n%s}}$$"
+    	    alignment
+    	    contents)))
+
+;; Concatenate rows with rules + \cr at the end of each line
+(defun org-plaintex-table-row (table-row contents info)
+  "Transcode a TABLE-ROW element from Org to LaTeX.
+CONTENTS is the contents of the row.  INFO is a plist used as
+a communication channel."
+    (if (eq (org-element-property :type table-row) 'rule)
+	(cond
+	 ((not (org-export-get-previous-element table-row info)) "\\toprule")
+	 ((not (org-export-get-next-element table-row info)) "\\bottomrule")
+	 (t "\\midrule"))
+      (concat
+       contents "\\cr\n")))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;  Blocks                                                                  ;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;; Center
+(defun org-plaintex-center-block (center-block contents info)
+  "Transcode a CENTER-BLOCK element from Org to LaTeX.
+CONTENTS holds the contents of the center block.  INFO is a plist
+holding contextual information."
+  (org-latex--wrap-label
+   center-block (format "\\begincenter\n%s\\endcenter" contents) info))
+
+;;; Example
+(defun org-plaintex-example-block (example-block _contents info)
+  "Transcode an EXAMPLE-BLOCK element from Org to LaTeX.
+CONTENTS is nil.  INFO is a plist holding contextual
+information."
+  (when (org-string-nw-p (org-element-property :value example-block))
+      (org-latex--wrap-label
+       example-block
+       (format "\\verbatim|%s|\\endverbatim"
+	       (org-export-format-code-default example-block info))
+       info)))
+
+;;; Quote
+(defun org-plaintex-quote-block (quote-block contents info)
+  "Transcode a QUOTE-BLOCK element from Org to LaTeX.
+CONTENTS holds the contents of the block.  INFO is a plist
+holding contextual information."
+  (org-latex--wrap-label
+   quote-block (format "\\beginquote\n%s\\endquote" contents) info))
+
+;;;; Src
+(defun org-plaintex-src-block (src-block _contents info)
+  "Transcode a SRC-BLOCK element from Org to LaTeX.
+CONTENTS holds the contents of the item.  INFO is a plist holding
+contextual information."
+  (when (org-string-nw-p (org-element-property :value src-block))
+    (let* ((lang (org-element-property :language src-block))
+	   (caption (org-element-property :caption src-block))
+	   (caption-above-p (org-latex--caption-above-p src-block info))
+	   (label (org-element-property :name src-block))
+	   (custom-env (and lang
+			    (cadr (assq (intern lang)
+					org-latex-custom-lang-environments))))
+	   (num-start (org-export-get-loc src-block info))
+	   (retain-labels (org-element-property :retain-labels src-block))
+	   (attributes (org-export-read-attribute :attr_latex src-block))
+	   (float (plist-get attributes :float))
+	   (listings (plist-get info :latex-listings)))
+      (concat (format "\\verbatim|%s|endverbatim"
+		      (org-export-format-code-default src-block info))))))
+
+;;; Verbatim
+(defun org-latex-verbatim (verbatim _contents info)
+  "Transcode a VERBATIM object from Org to LaTeX.
+CONTENTS is nil.  INFO is a plist used as a communication
+channel."
+  (org-plaintex--text-markup
+   (org-element-property :value verbatim) 'verbatim info))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;  Export                                                                  ;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (org-export-define-derived-backend 'plaintex 'latex
   :menu-entry
   '(?l 1
@@ -27,6 +235,8 @@
     (italic . org-plaintex-italic)
     (item . org-plaintex-item)
     (latex-math-block . org-plaintex-math-block)
+    (latex-matrices . org-plaintex-matrices)
+    (latex-default-table-environment org-plaintex-default-table-environment)
     (plain-list . org-plaintex-plain-list)
     (quote-block . org-plaintex-quote-block)
     (src-block . org-plaintex-src-block)
@@ -37,22 +247,6 @@
     (table-row . org-plaintex-table-row)
     (template . org-plaintex-template)
     (verbatim . org-plaintex-verbatim)))
-
-;;; Add a minimal class with plain TeX style sections
-(unless (assoc "plaintex" org-latex-classes)
-  (add-to-list 'org-latex-classes
-	       '("plaintex"
-		 "[NO-DEFAULT-PACKAGES]
-                  [NO-PACKAGES]"
-		 ("\n\\section %s" . "\n\\section %s")
-		 ("\n\\subsection %s" . "\n\\subsection %s")
-		 ("\n\\subsubsection %s" . "\n\\subsubsection %s"))))
-
-(defgroup org-export-plaintex nil
-  "Options specific for using the plaintex class in LaTeX export."
-  :tag "Org plaintex"
-  :group 'org-export
-  :version "25.3")
 
 ;; Plain TeX file template
 (defun org-plaintex-template (contents info)
@@ -198,95 +392,27 @@ holding export options."
      ;; Document end.
      "\\bye")))
 
+;;; Export to a buffer
+(defun org-plaintex-export-as-latex
+  (&optional async subtreep visible-only body-only ext-plist)
+  "Export current buffer as a plain TeX buffer."
+  (interactive)
+  (org-export-to-buffer 'plaintex "*Org PLAIN TEX Export*"
+    async subtreep visible-only body-only ext-plist (lambda () (LaTeX-mode))))
 
-;;; Markup
-(defcustom org-plaintex-text-markup-alist '((bold . "{\\bf %s}")
-					    (code . "{\\tt %s}")
-					    (italic . "{\\it %s}")
-					    (strike-through . "\\sout{%s}")
-					    (underline . "{\\underline %s}")
-					    (verbatim . "{\\tt %s}"))
-  "Alist of LaTeX expressions to convert text markup."
-  :group 'org-export-plaintex
-  :version "26.1"
-  :package-version '(Org . "8.3")
-  :type 'alist
-  :options '(bold code italic strike-through underline verbatim))
-
-
-;;; Bold
-(defun org-plaintex-bold (_bold contents info)
-  "Transcode BOLD from Org to LaTeX.
-CONTENTS is the text with bold markup.  INFO is a plist holding
-contextual information."
-  (org-plaintex--text-markup contents 'bold info))
+;;; Export to a .tex file
+(defun org-plaintex-export-to-latex
+  (&optional async subtreep visible-only body-only ext-plist)
+  "Export current buffer as a plain TeX file."
+  (interactive)
+  (let ((file (org-export-output-file-name ".tex" subtreep)))
+    (org-export-to-file 'plaintex file
+      async subtreep visible-only body-only ext-plist)))
 
 
-;;; Code
-(defun org-latex-code (code _contents info)
-  "Transcode a CODE object from Org to LaTeX.
-CONTENTS is nil.  INFO is a plist used as a communication
-channel."
-  (org-plaintex--text-markup (org-element-property :value code) 'code info))
-
-
-;;; Italic
-(defun org-latex-italic (_italic contents info)
-  "Transcode ITALIC from Org to LaTeX.
-CONTENTS is the text with italic markup.  INFO is a plist holding
-contextual information."
-  (org-plaintex--text-markup contents 'italic info))
-
-
-;;; Underline
-(defun org-latex-underline (_underline contents info)
-  "Transcode UNDERLINE from Org to LaTeX.
-CONTENTS is the text with underline markup.  INFO is a plist
-holding contextual information."
-  (org-plaintex--text-markup contents 'underline info))
-
-
-;;; Verbatim
-(defun org-latex-verbatim (verbatim _contents info)
-  "Transcode a VERBATIM object from Org to LaTeX.
-CONTENTS is nil.  INFO is a plist used as a communication
-channel."
-  (org-plaintex--text-markup
-   (org-element-property :value verbatim) 'verbatim info))
-
-
-;;; Apply text markup
-(defun org-plaintex--text-markup (text markup info)
-  "Format TEXT depending on MARKUP text markup.
-INFO is a plist used as a communication channel.  See
-`org-latex-text-markup-alist' for details."
-  (let ((fmt (cdr (assq markup (plist-get info :plaintex-text-markup-alist)))))
-    (cl-case fmt
-      ;; No format string: Return raw text.
-      ((nil) text)
-      ;; Handle the `verb' special case: Find an appropriate separator
-      ;; and use "\\verb" command.
-      (verb
-       (let ((separator (org-latex--find-verb-separator text)))
-	 (concat "\\verb"
-		 separator
-		 (replace-regexp-in-string "\n" " " text)
-		 separator)))
-      ;; Handle the `protectedtexttt' special case: Protect some
-      ;; special chars and use "\texttt{%s}" format string.
-      (protectedtexttt
-       (format "\\texttt{%s}"
-	       (replace-regexp-in-string
-		"--\\|[\\{}$%&_#~^]"
-		(lambda (m)
-		  (cond ((equal m "--") "-{}-")
-			((equal m "\\") "\\textbackslash{}")
-			((equal m "~") "\\textasciitilde{}")
-			((equal m "^") "\\textasciicircum{}")
-			(t (org-latex--protect-text m))))
-		text nil t)))
-      ;; Else use format string.
-      (t (format fmt text)))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;  Lists                                                                   ;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Plain List
 (defun org-plaintex-plain-list (plain-list contents info)
@@ -371,200 +497,45 @@ contextual information."
 	    (and contents (org-trim contents)))))
 
 
-;; Make halign the default table environment
-(defcustom org-latex-default-table-environment "halign"
-  "Default environment used to build tables."
-  :group 'org-export-plaintex
-  :version "24.4"
-  :package-version '(Org . "8.0")
-  :type 'string)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;  Markup                                                                  ;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; Plain TeX style table alignment
-(defun org-plaintex--align-string (table info &optional math?)
-  "Return an appropriate LaTeX alignment string.
-TABLE is the considered table.  INFO is a plist used as
-a communication channel.  When optional argument MATH? is
-non-nil, TABLE is meant to be a matrix, where all cells are
-centered."
-  (or (org-export-read-attribute :attr_latex table :align)
-      (let (align)
-	;; Extract column groups and alignment from first (non-rule)
-	;; row.
-	(org-element-map
-	    (org-element-map table 'table-row
-	      (lambda (row)
-		(and (eq (org-element-property :type row) 'standard) row))
-	      info 'first-match)
-	    'table-cell
-	  (lambda (cell)
-	    (let ((borders (org-export-table-cell-borders cell info)))
-	      ;; Check left border for the first cell only.
-	      (when (and (memq 'left borders) (not align))
-		(push "|" align))
-	      (push (if math? "\\hfil#\\hfil"	;center cells in matrices
-		      (cl-case (org-export-table-cell-alignment cell info)
-			(left "\\quad#\\hfil")
-			(right "\\hfil#\\quad")
-			(center "\\hfil#\\hfil")))
-		    align)
-	      (when (memq 'right borders) (push "|" align))))
-	  info)
-	(string-join align " & "))))
+;;; Bold
+(defun org-plaintex-bold (_bold contents info)
+  "Transcode BOLD from Org to LaTeX.
+CONTENTS is the text with bold markup.  INFO is a plist holding
+contextual information."
+  (org-plaintex--text-markup contents 'bold info))
 
+;;; Code
+(defun org-latex-code (code _contents info)
+  "Transcode a CODE object from Org to LaTeX.
+CONTENTS is nil.  INFO is a plist used as a communication
+channel."
+  (org-plaintex--text-markup (org-element-property :value code) 'code info))
 
-(defun org-plaintex--org-table (table contents info)
-  "Return appropriate LaTeX code for an Org table.
+;;; Footnote
+(defun org-plaintex-footnote-reference (footnote-reference _contents info)
+  "Transcode a FOOTNOTE-REFERENCE element from Org to LaTeX.
+CONTENTS is nil.  INFO is a plist holding contextual information."
+  (let ((def (org-export-get-footnote-definition footnote-reference info)))
+    (format "\\numberedfootnote{%s}" (org-trim (org-export-data def info)))))
 
-TABLE is the table type element to transcode.  CONTENTS is its
-contents, as a string.  INFO is a plist used as a communication
-channel.
-
-This function assumes TABLE has `org' as its `:type' property and
-`table' as its `:mode' attribute."
-  (let* ((alignment (org-plaintex--align-string table info)))
-    ;; Prepare the final format string for the table.
-    (format "$$\\vbox{\\halign{\n\\tstrut%s\\cr\n%s}}$$"
-    	    alignment
-    	    contents)))
-
-(defun org-latex-matrices (matrices contents _info)
-  "Transcode a MATRICES element from Org to LaTeX.
+;;; Inline math
+(defun org-plaintex-math-block (_math-block contents _info)
+  "Transcode a MATH-BLOCK object from Org to LaTeX.
 CONTENTS is a string.  INFO is a plist used as a communication
 channel."
-  (format (cl-case (org-element-property :markup matrices)
-	    (inline "\\(%s\\)")
-	    (equation "\\begin{equation}\n%s\\end{equation}")
-	    (t "$$\n%s$$"))
-	  contents))
+  (when (org-string-nw-p contents)
+    (format "$%s$" (org-trim contents))))
 
-(defun org-plaintex--math-table (table info)
-  "Return appropriate LaTeX code for a matrix.
-
-TABLE is the table type element to transcode.  INFO is a plist
-used as a communication channel.
-
-This function assumes TABLE has `org' as its `:type' property and
-`inline-math' or `math' as its `:mode' attribute."
-  (let* ((attr (org-export-read-attribute :attr_latex table))
-	 (env (or (plist-get attr :environment)
-		  (plist-get info :latex-default-table-environment)))
-	 (contents
-	  (mapconcat
-	   (lambda (row)
-	     (if (eq (org-element-property :type row) 'rule) "\\hline"
-	       ;; Return each cell unmodified.
-	       (concat
-		(mapconcat
-		 (lambda (cell)
-		   (substring (org-element-interpret-data cell) 0 -1))
-		 (org-element-map row 'table-cell #'identity info) "&")
-		(or (cdr (assoc env org-latex-table-matrix-macros)) "\\\\")
-		"\n")))
-	   (org-element-map table 'table-row #'identity info) "")))
-    (concat
-     ;; Prefix.
-     (plist-get attr :math-prefix)
-     ;; Environment.  Also treat special cases.
-     (cond ((member env '("array" "tabular"))
-	    (format "\\begin{%s}{%s}\n%s\\end{%s}"
-		    env (org-latex--align-string table info t) contents env))
-	   ((assoc env org-latex-table-matrix-macros)
-	    (format "\\%s%s{\n%s}"
-		    env
-		    (or (plist-get attr :math-arguments) "")
-		    contents))
-	   (t (format "\\%s{\n%s}" env contents)))
-     ;; Suffix.
-     (plist-get attr :math-suffix))))
-
-(defun org-plaintex-table (table contents info)
-  "Transcode a TABLE element from Org to LaTeX.
-CONTENTS is the contents of the table.  INFO is a plist holding
+;;; Italic
+(defun org-latex-italic (_italic contents info)
+  "Transcode ITALIC from Org to LaTeX.
+CONTENTS is the text with italic markup.  INFO is a plist holding
 contextual information."
-  (if (eq (org-element-property :type table) 'table.el)
-      ;; "table.el" table.  Convert it using appropriate tools.
-      (org-latex--table.el-table table info)
-    (let ((type (or (org-export-read-attribute :attr_latex table :mode)
-		    (plist-get info :latex-default-table-mode))))
-      (cond
-       ;; Case 1: Verbatim table.
-       ((string= type "verbatim")
-	(format "\\begin{verbatim}\n%s\n\\end{verbatim}"
-		;; Re-create table, without affiliated keywords.
-		(org-trim (org-element-interpret-data
-			   `(table nil ,@(org-element-contents table))))))
-       ;; Case 2: Matrix.
-       ((or (string= type "math") (string= type "inline-math"))
-	(org-plaintex--math-table table info))
-       ;; Case 3: Standard table.
-       (t (concat (org-plaintex--org-table table contents info)
-		  ;; When there are footnote references within the
-		  ;; table, insert their definition just after it.
-		  (org-latex--delayed-footnotes-definitions table info)))))))
-
-(defun org-plaintex-table-row (table-row contents info)
-  "Transcode a TABLE-ROW element from Org to LaTeX.
-CONTENTS is the contents of the row.  INFO is a plist used as
-a communication channel."
-  (let* ((attr (org-export-read-attribute :attr_latex
-					  (org-export-get-parent table-row)))
-	 (booktabsp (if (plist-member attr :booktabs) (plist-get attr :booktabs)
-		      (plist-get info :latex-tables-booktabs)))
-	 (longtablep
-	  (member (or (plist-get attr :environment)
-		      (plist-get info :latex-default-table-environment))
-		  '("longtable" "longtabu"))))
-    (if (eq (org-element-property :type table-row) 'rule)
-	(cond
-	 ((not (org-export-get-previous-element table-row info)) "\\toprule")
-	 ((not (org-export-get-next-element table-row info)) "\\bottomrule")
-	 (t "\\midrule"))
-      (concat
-       ;; When BOOKTABS are activated enforce top-rule even when no
-       ;; hline was specifically marked.
-       (and booktabsp (not (org-export-get-previous-element table-row info))
-	    "\\toprule\n")
-       contents "\\cr\n"
-       (cond
-	;; Special case for long tables.  Define header and footers.
-	((and longtablep (org-export-table-row-ends-header-p table-row info))
-	 (let ((columns (cdr (org-export-table-dimensions
-			      (org-export-get-parent-table table-row) info))))
-	   (format "%s
-\\endfirsthead
-\\multicolumn{%d}{l}{%s} \\\\
-%s
-%s \\\\\n
-%s
-\\endhead
-%s\\multicolumn{%d}{r}{%s} \\\\
-\\endfoot
-\\endlastfoot"
-		   (if booktabsp "\\midrule" "\\hline")
-		   columns
-		   (org-latex--translate "Continued from previous page" info)
-		   (cond
-		    ((not (org-export-table-row-starts-header-p table-row info))
-		     "")
-		    (booktabsp "\\toprule\n")
-		    (t "\\hline\n"))
-		   contents
-		   (if booktabsp "\\midrule" "\\hline")
-		   (if booktabsp "\\midrule" "\\hline")
-		   columns
-		   (org-latex--translate "Continued on next page" info))))
-	;; When BOOKTABS are activated enforce bottom rule even when
-	;; no hline was specifically marked.
-	((and booktabsp (not (org-export-get-next-element table-row info)))
-	 "\\bottomrule"))))))
-
-;;; Quote
-(defun org-plaintex-quote-block (quote-block contents info)
-  "Transcode a QUOTE-BLOCK element from Org to LaTeX.
-CONTENTS holds the contents of the block.  INFO is a plist
-holding contextual information."
-  (org-latex--wrap-label
-   quote-block (format "\\beginquote\n%s\\endquote" contents) info))
+  (org-plaintex--text-markup contents 'italic info))
 
 ;;; Subscript
 (defun org-plaintex-subscript (_subscript contents _info)
@@ -578,53 +549,65 @@ CONTENTS is the contents of the object."
 CONTENTS is the contents of the object."
   (format "^{%s}" contents))
 
-;;; Footnote
-(defun org-plaintex-footnote-reference (footnote-reference _contents info)
-  "Transcode a FOOTNOTE-REFERENCE element from Org to LaTeX.
-CONTENTS is nil.  INFO is a plist holding contextual information."
-  (let ((def (org-export-get-footnote-definition footnote-reference info)))
-    (format "\\numberedfootnote{%s}" (org-trim (org-export-data def info)))))
+;;; Underline
+(defun org-latex-underline (_underline contents info)
+  "Transcode UNDERLINE from Org to LaTeX.
+CONTENTS is the text with underline markup.  INFO is a plist
+holding contextual information."
+  (org-plaintex--text-markup contents 'underline info))
 
-;;;; Src Block
-(defun org-plaintex-src-block (src-block _contents info)
-  "Transcode a SRC-BLOCK element from Org to LaTeX.
-CONTENTS holds the contents of the item.  INFO is a plist holding
-contextual information."
-  (when (org-string-nw-p (org-element-property :value src-block))
-    (let* ((lang (org-element-property :language src-block))
-	   (caption (org-element-property :caption src-block))
-	   (caption-above-p (org-latex--caption-above-p src-block info))
-	   (label (org-element-property :name src-block))
-	   (custom-env (and lang
-			    (cadr (assq (intern lang)
-					org-latex-custom-lang-environments))))
-	   (num-start (org-export-get-loc src-block info))
-	   (retain-labels (org-element-property :retain-labels src-block))
-	   (attributes (org-export-read-attribute :attr_latex src-block))
-	   (float (plist-get attributes :float))
-	   (listings (plist-get info :latex-listings)))
-      (concat (format "\\verbatim|%s|endverbatim"
-		      (org-export-format-code-default src-block info))))))
+;;; Markup
+(defcustom org-plaintex-text-markup-alist '((bold . "{\\bf %s}")
+					    (code . "{\\tt %s}")
+					    (italic . "{\\it %s}")
+					    (strike-through . "\\sout{%s}")
+					    (underline . "{\\underline %s}")
+					    (verbatim . "{\\tt %s}"))
+  "Alist of LaTeX expressions to convert text markup."
+  :group 'org-export-plaintex
+  :version "26.1"
+  :package-version '(Org . "8.3")
+  :type 'alist
+  :options '(bold code italic strike-through underline verbatim))
 
-;;; Example Block
-(defun org-plaintex-example-block (example-block _contents info)
-  "Transcode an EXAMPLE-BLOCK element from Org to LaTeX.
-CONTENTS is nil.  INFO is a plist holding contextual
-information."
-  (when (org-string-nw-p (org-element-property :value example-block))
-      (org-latex--wrap-label
-       example-block
-       (format "\\verbatim|%s|\\endverbatim"
-	       (org-export-format-code-default example-block info))
-       info)))
+;;; Apply text markup
+(defun org-plaintex--text-markup (text markup info)
+  "Format TEXT depending on MARKUP text markup.
+INFO is a plist used as a communication channel.  See
+`org-latex-text-markup-alist' for details."
+  (let ((fmt (cdr (assq markup (plist-get info :plaintex-text-markup-alist)))))
+    (cl-case fmt
+      ;; No format string: Return raw text.
+      ((nil) text)
+      ;; Handle the `verb' special case: Find an appropriate separator
+      ;; and use "\\verb" command.
+      (verb
+       (let ((separator (org-latex--find-verb-separator text)))
+	 (concat "\\verb"
+		 separator
+		 (replace-regexp-in-string "\n" " " text)
+		 separator)))
+      ;; Handle the `protectedtexttt' special case: Protect some
+      ;; special chars and use "\texttt{%s}" format string.
+      (protectedtexttt
+       (format "\\texttt{%s}"
+	       (replace-regexp-in-string
+		"--\\|[\\{}$%&_#~^]"
+		(lambda (m)
+		  (cond ((equal m "--") "-{}-")
+			((equal m "\\") "$\\backslash$")
+			((equal m "~") "$\\sim$")
+			((equal m "^") "$\\hat{}$")
+			(t (org-latex--protect-text m))))
+		text nil t)))
+      ;; Else use format string.
+      (t (format fmt text)))))
 
-;;; Inline math
-(defun org-plaintex-math-block (_math-block contents _info)
-  "Transcode a MATH-BLOCK object from Org to LaTeX.
-CONTENTS is a string.  INFO is a plist used as a communication
-channel."
-  (when (org-string-nw-p contents)
-    (format "$%s$" (org-trim contents))))
+
+
+
+
+
 
 (defun org-plaintex--label (datum info &optional force full)
   "Return an appropriate label for DATUM.
@@ -665,7 +648,6 @@ Eventually, if FULL is non-nil, wrap label within \"\\label{}\"."
 			 label
 			 (if (eq type 'target) "" "\n")))
 	  (t ""))))
-
 
 (defun org-latex-headline (headline contents info)
   "Transcode a HEADLINE element from Org to LaTeX.
@@ -794,30 +776,6 @@ holding contextual information."
 	    (format section-fmt full-text
 		    (concat headline-label pre-blanks contents))))))))
 
-;;; Center block
-(defun org-plaintex-center-block (center-block contents info)
-  "Transcode a CENTER-BLOCK element from Org to LaTeX.
-CONTENTS holds the contents of the center block.  INFO is a plist
-holding contextual information."
-  (org-latex--wrap-label
-   center-block (format "\\begincenter\n%s\\endcenter" contents) info))
-
-;;; Export to a buffer
-(defun org-plaintex-export-as-latex
-  (&optional async subtreep visible-only body-only ext-plist)
-  "Export current buffer as a plain TeX buffer."
-  (interactive)
-  (org-export-to-buffer 'plaintex "*Org PLAIN TEX Export*"
-    async subtreep visible-only body-only ext-plist (lambda () (LaTeX-mode))))
-
-;;; Export to a .tex file
-(defun org-plaintex-export-to-latex
-  (&optional async subtreep visible-only body-only ext-plist)
-  "Export current buffer as a plain TeX file."
-  (interactive)
-  (let ((file (org-export-output-file-name ".tex" subtreep)))
-    (org-export-to-file 'plaintex file
-      async subtreep visible-only body-only ext-plist)))
 
 (provide 'ox-plaintex)
 ;;; ox-plaintex ends here
