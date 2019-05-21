@@ -1,6 +1,7 @@
 ;;; ox-plaintex.el --- Plain TeX Back-End for Org Export Engine -*- lexical-binding: t; -*-
 
 ;;; Code:
+
 (require 'cl-lib)
 (require 'ox-latex)
 
@@ -28,7 +29,7 @@
 ;;;  Alignment                                                               ;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; Make halign the default table environment
+;; Make halign the default alignment environment
 (defcustom org-plaintex-default-table-environment "halign"
   "Default environment used to build tables."
   :group 'org-export-plaintex
@@ -110,7 +111,7 @@ centered."
 	      ;; Check left border for the first cell only.
 	      (when (and (memq 'left borders) (not align))
 		(push "|" align))
-	      (push (if math? "\\enskip\\hfil#\\hfil\\enskip"	;center cells in matrices
+	      (push (if math? "\\enskip\\hfil#\\hfil\\enskip" ; center cells in matrices
 		      (cl-case (org-export-table-cell-alignment cell info)
 			(left "\\enskip#\\hfil\\enskip")
 			(right "\\enskip\\hfil#\\enskip")
