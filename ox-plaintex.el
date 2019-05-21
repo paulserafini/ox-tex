@@ -398,7 +398,7 @@ holding export options."
   "Export current buffer as a plain TeX buffer."
   (interactive)
   (org-export-to-buffer 'plaintex "*Org PLAIN TEX Export*"
-    async subtreep visible-only body-only ext-plist (lambda () (LaTeX-mode))))
+    async subtreep visible-only body-only ext-plist (lambda () (plain-TeX-mode))))
 
 ;;; Export to a .tex file
 (defun org-plaintex-export-to-latex
