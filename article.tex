@@ -1,0 +1,63 @@
+\input eplain.tex
+
+\def\begincenter{%
+\par
+\begingroup
+\leftskip=0pt plus 1fil
+\rightskip=\leftskip
+\parindent=0pt
+\parfillskip=0pt
+}
+\def\endcenter{%
+\par
+\endgroup
+}
+\long\def\centerpar#1{\begincenter#1\endcenter}
+
+
+\font\fourteenrm= cmr10 at 14pt%
+\def\title#1{\centerpar{\fourteenrm#1}\medskip}
+\def\author#1{\centerline{#1}\medskip}
+\def\date#1{\centerline{#1}}
+\def\abstract#1{\medskip{\narrower\smallskip\noindent Abstract: #1\par}}
+\def\keywords#1{{\narrower\smallskip\noindent Key words: \it #1\par}}
+
+\def\beginquote{\begingroup\par\narrower\smallskip\noindent}
+\def\endquote{\smallskip\endgroup\noindent}
+
+
+\def\toprule{\noalign{\hrule height 1pt}}
+\def\midrule{\noalign{\vskip 0.25em \hrule height 0.5pt}}
+\def\bottomrule{\noalign{\vskip 0.25em \hrule height 1pt}}
+\def\tstrut{\vrule height 12pt depth3pt width0pt}
+
+\newbox\TestBox
+\def\sout#1{\setbox\TestBox=\hbox{#1}%
+\leavevmode\rlap{\vrule height 2.5pt depth-1.75pt width\wd\TestBox}%
+\box\TestBox\ }
+
+\newcount\sectioncount
+\def\section #1
+\par{\bigskip
+  \subsectioncount=0
+  \advance \sectioncount by 1
+  {\noindent\the\sectioncount.\ #1}
+  \smallskip\noindent
+}
+
+\newcount\subsectioncount
+\def\subsection #1
+\par{\smallskip
+  \advance \subsectioncount by 1
+  \subsubsectioncount=0
+  {\noindent\the\sectioncount.\the\subsectioncount\ #1}
+  \smallskip\noindent
+}
+
+\newcount\subsubsectioncount
+\def\subsubsection #1
+\par{\smallskip
+  \advance \subsubsectioncount by 1
+  {\noindent\the\sectioncount.\the\subsectioncount.\the\subsubsectioncount\ #1}
+  \smallskip\noindent
+}
