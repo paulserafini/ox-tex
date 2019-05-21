@@ -34,6 +34,7 @@
     (superscript . org-plaintex-superscript)
     (underline . org-plaintex-underline)
     (table . org-plaintex-table)
+    (table-row . org-plaintex-table-row)
     (template . org-plaintex-template)
     (verbatim . org-plaintex-verbatim)))
 
@@ -87,6 +88,11 @@ holding export options."
 
      "\\def\\beginquote{\\begingroup\\par\\narrower\\smallskip\\noindent}\n"
      "\\def\\endquote{\\smallskip\\endgroup\\noindent}\n\n"
+
+     "\\def\\toprule{\\noalign{\\hrule height 1pt}}\n"
+     "\\def\\midrule{\\noalign{\\vskip 0.25em \\hrule height 0.5pt}}\n"
+     "\\def\\bottomrule{\\noalign{\\vskip 0.25em \\hrule height 1pt}}\n"
+     "\\def\\tstrut{\\vrule height 12pt depth3pt width0pt}\n\n"
 
      ;; Strike-through macro
      ;; https://tex.stackexchange.com/a/93794
@@ -417,7 +423,7 @@ This function assumes TABLE has `org' as its `:type' property and
 `table' as its `:mode' attribute."
   (let* ((alignment (org-plaintex--align-string table info)))
     ;; Prepare the final format string for the table.
-    (format "\\halign{\n%s\\cr\n%s}"
+    (format "$$\\vbox{\\halign{\n\\tstrut%s\\cr\n%s}}$$"
     	    alignment
     	    contents)))
 
@@ -495,6 +501,62 @@ contextual information."
 		  ;; When there are footnote references within the
 		  ;; table, insert their definition just after it.
 		  (org-latex--delayed-footnotes-definitions table info)))))))
+
+(defun org-plaintex-table-row (table-row contents info)
+  "Transcode a TABLE-ROW element from Org to LaTeX.
+CONTENTS is the contents of the row.  INFO is a plist used as
+a communication channel."
+  (let* ((attr (org-export-read-attribute :attr_latex
+					  (org-export-get-parent table-row)))
+	 (booktabsp (if (plist-member attr :booktabs) (plist-get attr :booktabs)
+		      (plist-get info :latex-tables-booktabs)))
+	 (longtablep
+	  (member (or (plist-get attr :environment)
+		      (plist-get info :latex-default-table-environment))
+		  '("longtable" "longtabu"))))
+    (if (eq (org-element-property :type table-row) 'rule)
+	(cond
+	 ((not (org-export-get-previous-element table-row info)) "\\toprule")
+	 ((not (org-export-get-next-element table-row info)) "\\bottomrule")
+	 (t "\\midrule"))
+      (concat
+       ;; When BOOKTABS are activated enforce top-rule even when no
+       ;; hline was specifically marked.
+       (and booktabsp (not (org-export-get-previous-element table-row info))
+	    "\\toprule\n")
+       contents "\\cr\n"
+       (cond
+	;; Special case for long tables.  Define header and footers.
+	((and longtablep (org-export-table-row-ends-header-p table-row info))
+	 (let ((columns (cdr (org-export-table-dimensions
+			      (org-export-get-parent-table table-row) info))))
+	   (format "%s
+\\endfirsthead
+\\multicolumn{%d}{l}{%s} \\\\
+%s
+%s \\\\\n
+%s
+\\endhead
+%s\\multicolumn{%d}{r}{%s} \\\\
+\\endfoot
+\\endlastfoot"
+		   (if booktabsp "\\midrule" "\\hline")
+		   columns
+		   (org-latex--translate "Continued from previous page" info)
+		   (cond
+		    ((not (org-export-table-row-starts-header-p table-row info))
+		     "")
+		    (booktabsp "\\toprule\n")
+		    (t "\\hline\n"))
+		   contents
+		   (if booktabsp "\\midrule" "\\hline")
+		   (if booktabsp "\\midrule" "\\hline")
+		   columns
+		   (org-latex--translate "Continued on next page" info))))
+	;; When BOOKTABS are activated enforce bottom rule even when
+	;; no hline was specifically marked.
+	((and booktabsp (not (org-export-get-next-element table-row info)))
+	 "\\bottomrule"))))))
 
 ;;; Quote
 (defun org-plaintex-quote-block (quote-block contents info)
