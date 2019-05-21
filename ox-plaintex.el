@@ -321,21 +321,6 @@ holding export options."
     "  \\smallskip\\noindent\n"
     "}\n\n"
 
-     ;; Time-stamp.
-     (and (plist-get info :time-stamp-file)
-          (format-time-string "%% Created %Y-%m-%d %a %H:%M\n"))
-
-     ;; LaTeX compiler.
-     (org-latex--insert-compiler info)
-
-     ;; Document class and packages.
-     (org-latex-make-preamble info)
-
-     ;; Possibly limit depth for headline numbering.
-     (let ((sec-num (plist-get info :section-numbers)))
-       (when (integerp sec-num)
-         (format "\\setcounter{secnumdepth}{%d}\n" sec-num)))
-
      ;; Title and subtitle.
      (let* ((subtitle (plist-get info :subtitle))
             (formatted-subtitle
@@ -359,25 +344,13 @@ holding export options."
      (let ((date (and (plist-get info :with-date) (org-export-get-date info))))
        (format "\\date{%s}\n" (org-export-data date info)))
 
-     ;; Hyperref options.
-     (let ((template (plist-get info :latex-hyperref-template)))
-       (and (stringp template)
-            (format-spec template spec)))
-
-     ;; ;; Table of contents.
-     ;; (let ((depth (plist-get info :with-toc)))
-     ;;   (when depth
-     ;; 	 (concat (when (integerp depth)
-     ;; 		   (format "\\setcounter{tocdepth}{%d}\n" depth))
-     ;; 		 (plist-get info :latex-toc-command))))
-
      ;; Add abstract if defined
      (let ((abstract (plist-get info :abstract)))
        (when abstract
          (format "\\abstract{%s}\n"
 		 (org-export-data (plist-get info :abstract) info))))
 
-     ;; Add abstract if defined
+     ;; Add keywords if defined
      (let ((keywords (plist-get info :keywords)))
        (when keywords
          (format "\\keywords{%s}\n"
@@ -386,9 +359,6 @@ holding export options."
      ;; Document's body.
      contents
 
-     ;; Creator.
-     (and (plist-get info :with-creator)
-          (concat (plist-get info :creator) "\n"))
      ;; Document end.
      "\\bye")))
 
