@@ -81,7 +81,9 @@ holding export options."
      "\\font\\fourteenrm= cmr10 at 14pt%\n"
      "\\def\\title#1{\\centerpar{\\fourteenrm#1}\\medskip}\n"
      "\\def\\author#1{\\centerline{#1}\\medskip}\n"
-     "\\def\\date#1{\\centerline{#1}}\n\n"
+     "\\def\\date#1{\\centerline{#1}}\n"
+     "\\def\\abstract#1{\\medskip{\\narrower\\smallskip\\noindent Abstract: #1\\par}}\n"
+     "\\def\\keywords#1{{\\narrower\\smallskip\\noindent Key words: \\it #1\\par}}\n\n"
 
      "\\def\\beginquote{\\begingroup\\par\\narrower\\smallskip\\noindent}\n"
      "\\def\\endquote{\\smallskip\\endgroup\\noindent}\n\n"
@@ -746,7 +748,6 @@ holding contextual information."
   (org-export-to-buffer 'plaintex "*Org PLAIN TEX Export*"
     async subtreep visible-only body-only ext-plist (lambda () (LaTeX-mode))))
 
-
 ;;; Export to a .tex file
 (defun org-plaintex-export-to-latex
   (&optional async subtreep visible-only body-only ext-plist)
@@ -755,7 +756,6 @@ holding contextual information."
   (let ((file (org-export-output-file-name ".tex" subtreep)))
     (org-export-to-file 'plaintex file
       async subtreep visible-only body-only ext-plist)))
-
 
 (provide 'ox-plaintex)
 ;;; ox-plaintex ends here
