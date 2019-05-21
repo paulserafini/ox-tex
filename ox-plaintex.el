@@ -84,10 +84,10 @@ This function assumes TABLE has `org' as its `:type' property and
 		 (lambda (cell)
 		   (substring (org-element-interpret-data cell) 0 -1))
 		 (org-element-map row 'table-cell #'identity info) "&")
-		(or (cdr (assoc env org-latex-table-matrix-macros)) "\\\\")
+		(or (cdr (assoc env org-latex-table-matrix-macros)) "\\cr")
 		"\n")))
 	   (org-element-map table 'table-row #'identity info) "")))
-    (format "\\matrix{\n%s}" contents)))
+    (format "\\left(\\matrix{\n%s}\\right)" contents)))
 
 ;; Plain TeX style table alignment
 (defun org-plaintex--align-string (table info &optional math?)
