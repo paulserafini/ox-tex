@@ -1,0 +1,122 @@
+\input eplain.tex
+
+\def\begincenter{%
+\par
+\begingroup
+\leftskip=0pt plus 1fil
+\rightskip=\leftskip
+\parindent=0pt
+\parfillskip=0pt
+}
+\def\endcenter{%
+\par
+\endgroup
+}
+\long\def\centerpar#1{\begincenter#1\endcenter}
+
+\font\eighteenrm= cmr10 at18pt
+\font\fourteenrm= cmr10 at 14pt%
+\font\twelverm= cmr10 at12pt
+
+
+\def\beginquote{\begingroup\par\narrower\smallskip\noindent}
+\def\endquote{\smallskip\endgroup\noindent}
+
+
+\def\toprule{\noalign{\hrule height 1pt}}
+\def\midrule{\noalign{\vskip 0.25em \hrule height 0.5pt}}
+\def\bottomrule{\noalign{\vskip 0.25em \hrule height 1pt}}
+\def\tstrut{\vrule height 12pt depth3pt width0pt}
+
+\newbox\TestBox
+\def\sout#1{\setbox\TestBox=\hbox{#1}%
+\leavevmode\rlap{\vrule height 2.5pt depth-1.75pt width\wd\TestBox}%
+\box\TestBox\ }
+
+\def\newpage{\vfill\break}
+
+\def\title#1{\def\title{#1}}
+\def\author#1{\def\author{#1}}
+
+\def\maketitle{%
+{%
+  \nopagenumbers
+  \baselineskip = 25pt
+  \topglue 0pt plus 1fill
+  \centerpar{\eighteenrm\title}
+  \centerline{\twelverm\author}
+  \centerline{\twelverm\today}
+  \tenrm\newpage
+}
+\pageno -2
+}
+
+\def\keywords#1{\def\keywords{#1}}
+\def\abstract#1{\def\abstract{#1}}
+\def\makeabstract{%
+  \centerline {\bf Abstract}
+  {\narrower\smallskip\noindent \abstract{}}
+  {\narrower\smallskip \keywords{}}
+  \newpage
+}
+
+\newif\ifrunfoot
+\newif\ifrunhead
+\newcount\chapterNumber
+\def\chapter #1
+\par{%
+  \newpage
+  \eject\topglue 1in
+
+  % TeXbook, p. 253
+  \def\rightheadline{\tenrm\hfil #1\enskip\folio}
+  \def\leftheadline{\tenrm\folio\enskip #1\hfil}
+
+  % A TEX Primer for Scientists, p. 118
+  \runheadfalse
+  \headline={\ifrunhead
+    \ifodd\pageno\rightheadline \else\leftheadline\fi
+    \else \hfil \global\runheadtrue \fi}
+
+  % A TEX Primer for Scientists, p. 118
+  \runfootfalse
+  \footline={\ifrunfoot
+    \hfil
+    \else \hfil\rm\folio\hfil \global\runfoottrue \fi} % turned bold at on point, hence \rm
+  
+  \advance \chapterNumber by 1
+  \sectionNumber=0
+  % \tableNumber=0
+  % \figureNumber=0
+  % \scriptNumber=0
+
+  {\eighteenrm\noindent\the\chapterNumber\ #1}
+  \writenumberedtocentry{chapter}{#1}{\the\chapterNumber}
+
+  \bigskip\noindent
+}
+
+\newcount\sectionNumber
+\def\section #1
+\par{%
+  \bigskip
+  \advance \sectionNumber by 1
+  \subsectioncount=0
+  {\twelverm\noindent\the\chapterNumber.\the\sectionNumber\ #1}
+  \xdef\ID{\the\chapterNumber.\the\sectionNumber}
+  \writenumberedtocentry{section}{#1}{\ID}
+
+  \smallskip\noindent
+}
+
+\newcount\subsectioncount
+\def\subsection #1
+\par{%
+  \medskip
+  \advance \subsectioncount by 1
+  {\noindent\bf\the\chapterNumber.\the\sectionNumber.\the\subsectioncount\ #1}
+  \xdef\ID{\the\chapterNumber.\the\sectionNumber.\the\subsectioncount}
+  \writenumberedtocentry{subsection}{#1}{\ID}
+
+  \noindent
+}
