@@ -257,6 +257,16 @@ channel."
     (template . org-plaintex-template)
     (verbatim . org-plaintex-verbatim)))
 
+(defun download-macro (url)
+  "Insert a file from a URL."
+  (with-current-buffer
+      (url-retrieve-synchronously url)
+    (goto-char (point-min))
+    (re-search-forward "^$")
+    (delete-region (point) (point-min))
+    (kill-whole-line)
+    (buffer-string)))
+
 ;; Plain TeX file template
 (defun org-plaintex-template (contents info)
   "Return complete document string after LaTeX conversion.
@@ -290,10 +300,6 @@ holding export options."
                           (and auth (org-export-data auth info))))))
        (format "\\author{%s}\n" author))
 
-     ;; Date.
-     (let ((date (and (plist-get info :with-date) (org-export-get-date info))))
-       (format "\\date{%s}\n" (org-export-data date info)))
-
      ;; Add abstract if defined
      (let ((abstract (plist-get info :abstract)))
        (when abstract
@@ -303,8 +309,15 @@ holding export options."
      ;; Add keywords if defined
      (let ((keywords (plist-get info :keywords)))
        (when keywords
-         (format "\\keywords{%s}\n"
+         (format "\\keywords{Key words: \\it %s}\n"
 		 (org-export-data (plist-get info :keywords) info))))
+
+     (if (string= (plist-get info :latex-class) "book")
+	 (format "\\maketitle\n"))
+
+     (if (and (string= (plist-get info :latex-class) "book")
+	      (plist-get info :abstract))
+	 (format "\\makeabstract\n"))
 
      ;; Document's body.
      contents
