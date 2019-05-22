@@ -638,7 +638,7 @@ holding contextual information."
     (let* ((class (plist-get info :latex-class))
 	   (level (org-export-get-relative-level headline info))
 	   (numberedp (org-export-numbered-headline-p headline info))
-	   (class-sectioning (assoc class (plist-get info :latex-classes)))
+	   (class-sectioning (assoc class (plist-get info :plaintex-classes)))
 	   ;; Section formatting will set two placeholders: one for
 	   ;; the title and the other for the contents.
 	   (section-fmt
