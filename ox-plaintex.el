@@ -11,54 +11,11 @@
 (defvar org-latex-packages-alist)
 (defvar orgtbl-exp-regexp)
 
-(defcustom org-plaintex-classes
-  '(("article"
-     "[NO-DEFAULT-PACKAGES]
-                   [NO-PACKAGES]"
-     ("\n\\section %s" . "\n\\section %s")
-     ("\n\\subsection %s" . "\n\\subsection %s")
-     ("\n\\subsubsection %s" . "\n\\subsubsection %s"))
-    ("book"
-     "[NO-DEFAULT-PACKAGES]
-                   [NO-PACKAGES]"
-     ("\n\\chapter %s" . "\n\\chapter %s")
-     ("\n\\section %s" . "\n\\section %s")
-     ("\n\\subsection %s" . "\n\\subsection %s")
-     ("\n\\subsubsection %s" . "\n\\subsubsection %s")))
-  "Alist of LaTeX classes and associated header and structure.
-If #+LATEX_CLASS is set in the buffer, use its value and the
-associated information."
-  :group 'org-export-plaintex
-  :type '(repeat
-	  (list (string :tag "LaTeX class")
-		(string :tag "LaTeX header")
-		(repeat :tag "Levels" :inline t
-			(choice
-			 (cons :tag "Heading"
-			       (string :tag "  numbered")
-			       (string :tag "unnumbered"))
-			 (list :tag "Environment"
-			       (string :tag "Opening   (numbered)")
-			       (string :tag "Closing   (numbered)")
-			       (string :tag "Opening (unnumbered)")
-			       (string :tag "Closing (unnumbered)"))
-			 (function :tag "Hook computing sectioning"))))))
-
-(defgroup org-export-plaintex nil
-  "Options specific for using the plaintex class in LaTeX export."
-  :tag "Org plaintex"
-  :group 'org-export
-  :version "25.3")
-
-(defcustom org-plaintex-default-class "article"
-  "The default LaTeX class."
-  :group 'org-export-latex
-  :type '(string :tag "LaTeX class"))
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;  Alignment                                                               ;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;			      Alignment                                        ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Make halign the default alignment environment
 (defcustom org-plaintex-default-table-environment "halign"
@@ -181,9 +138,9 @@ a communication channel."
      contents "\\cr\n")))
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;  Blocks                                                                  ;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;				Blocks                                         ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;; Center
 (defun org-plaintex-center-block (center-block contents info)
@@ -243,9 +200,9 @@ channel."
    (org-element-property :value verbatim) 'verbatim info))
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;  Export                                                                  ;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;				Export                                         ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (org-export-define-derived-backend 'plaintex 'latex
   :menu-entry
@@ -279,6 +236,50 @@ channel."
     (table-row . org-plaintex-table-row)
     (template . org-plaintex-template)
     (verbatim . org-plaintex-verbatim)))
+
+(defcustom org-plaintex-classes
+  '(("article"
+     "[NO-DEFAULT-PACKAGES]
+      [NO-PACKAGES]"
+     ("\n\\section %s" . "\n\\section %s")
+     ("\n\\subsection %s" . "\n\\subsection %s")
+     ("\n\\subsubsection %s" . "\n\\subsubsection %s"))
+    ("book"
+     "[NO-DEFAULT-PACKAGES]
+      [NO-PACKAGES]"
+     ("\n\\chapter %s" . "\n\\chapter %s")
+     ("\n\\section %s" . "\n\\section %s")
+     ("\n\\subsection %s" . "\n\\subsection %s")
+     ("\n\\subsubsection %s" . "\n\\subsubsection %s")))
+  "Alist of LaTeX classes and associated header and structure.
+If #+LATEX_CLASS is set in the buffer, use its value and the
+associated information."
+  :group 'org-export-plaintex
+  :type '(repeat
+	  (list (string :tag "LaTeX class")
+		(string :tag "LaTeX header")
+		(repeat :tag "Levels" :inline t
+			(choice
+			 (cons :tag "Heading"
+			       (string :tag "  numbered")
+			       (string :tag "unnumbered"))
+			 (list :tag "Environment"
+			       (string :tag "Opening   (numbered)")
+			       (string :tag "Closing   (numbered)")
+			       (string :tag "Opening (unnumbered)")
+			       (string :tag "Closing (unnumbered)"))
+			 (function :tag "Hook computing sectioning"))))))
+
+(defgroup org-export-plaintex nil
+  "Options specific for using the plaintex class in LaTeX export."
+  :tag "Org plaintex"
+  :group 'org-export
+  :version "25.3")
+
+(defcustom org-plaintex-default-class "article"
+  "The default LaTeX class."
+  :group 'org-export-latex
+  :type '(string :tag "LaTeX class"))
 
 (defun download-macro (url)
   "Insert a file from a URL."
@@ -390,9 +391,9 @@ holding export options."
       async subtreep visible-only body-only ext-plist)))
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;  Lists                                                                   ;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;				Lists                                          ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Plain List
 (defun org-plaintex-plain-list (plain-list contents info)
@@ -477,9 +478,9 @@ contextual information."
 	    (and contents (org-trim contents)))))
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;  Markup                                                                  ;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;				Markup                                         ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;; Bold
 (defun org-plaintex-bold (_bold contents info)
