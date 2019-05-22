@@ -212,6 +212,7 @@ channel."
   :options-alist
   '((:plaintex-class "LATEX_CLASS" nil org-plaintex-default-class t)
     (:plaintex-classes nil nil org-plaintex-classes)
+    (:macros "MACROS" nil nil parse)
     (:abstract "ABSTRACT" nil nil parse)
     (:plaintex-text-markup-alist nil nil org-plaintex-text-markup-alist))
   :translate-alist
@@ -324,10 +325,15 @@ holding export options."
         (spec (org-plaintex--format-spec info)))
     (concat
 
+     ;; If a macros file is specified, \input that
+     ;; Otherwise download macros from github
      (cond
+      ((plist-get info :macros)
+       (format "\\input %s\n"
+	       (org-export-data (plist-get info :macros) info)))
       ((string= (plist-get info :latex-class) "article")
        (download-macro "https://raw.githubusercontent.com/paulserafini/ox-plaintex/master/article.tex"))
-      (t (download-macro "https://raw.githubusercontent.com/paulserafini/ox-plaintex/master/book.tex")))
+      (t (download-macro "https://raw.githubusercontent.com/paulserafini/ox-plaintex/master/chapter.tex")))
 
      ;; Title and subtitle.
      (let* ((subtitle (plist-get info :subtitle))
