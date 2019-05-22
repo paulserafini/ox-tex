@@ -266,69 +266,10 @@ holding export options."
         (spec (org-latex--format-spec info)))
     (concat
 
-     "\\input eplain.tex\n\n"
-
-     "\\def\\begincenter{%\n"
-     "\\par\n"
-     "\\begingroup\n"
-     "\\leftskip=0pt plus 1fil\n"
-     "\\rightskip=\\leftskip\n"
-     "\\parindent=0pt\n"
-     "\\parfillskip=0pt\n"
-     "}\n"
-     "\\def\\endcenter{%\n"
-     "\\par\n"
-     "\\endgroup\n"
-     "}\n"
-     "\\long\\def\\centerpar#1{\\begincenter#1\\endcenter}\n\n"
-
-     "\\font\\fourteenrm= cmr10 at 14pt%\n"
-     "\\def\\title#1{\\centerpar{\\fourteenrm#1}\\medskip}\n"
-     "\\def\\author#1{\\centerline{#1}\\medskip}\n"
-     "\\def\\date#1{\\centerline{#1}}\n"
-     "\\def\\abstract#1{\\medskip{\\narrower\\smallskip\\noindent Abstract: #1\\par}}\n"
-     "\\def\\keywords#1{{\\narrower\\smallskip\\noindent Key words: \\it #1\\par}}\n\n"
-
-     "\\def\\beginquote{\\begingroup\\par\\narrower\\smallskip\\noindent}\n"
-     "\\def\\endquote{\\smallskip\\endgroup\\noindent}\n\n"
-
-     "\\def\\toprule{\\noalign{\\hrule height 1pt}}\n"
-     "\\def\\midrule{\\noalign{\\vskip 0.25em \\hrule height 0.5pt}}\n"
-     "\\def\\bottomrule{\\noalign{\\vskip 0.25em \\hrule height 1pt}}\n"
-     "\\def\\tstrut{\\vrule height 12pt depth3pt width0pt}\n\n"
-
-     ;; Strike-through macro
-     ;; https://tex.stackexchange.com/a/93794
-     "\\newbox\\TestBox\n"
-     "\\def\\sout#1{\\setbox\\TestBox=\\hbox{#1}%\n"
-     "    \\leavevmode\\rlap{\\vrule height 2.5pt depth-1.75pt width\\wd\\TestBox}%\n"
-     "    \\box\\TestBox\\ }\n\n"
-
-     "\\newcount\\sectioncount\n"
-     "\\def\\section #1\n"
-     "\\par{\\bigskip\n"
-     "  \\subsectioncount=0\n"
-     "  \\advance \\sectioncount by 1\n"
-     "  {\\noindent\\the\\sectioncount.\\ #1}\n"
-     "  \\smallskip\\noindent\n"
-     "}\n\n"
-
-    "\\newcount\\subsectioncount\n"
-    "\\def\\subsection #1\n"
-    "\\par{\\smallskip\n"
-    "  \\advance \\subsectioncount by 1\n"
-    "  \\subsubsectioncount=0\n"
-    "  {\\noindent\\the\\sectioncount.\\the\\subsectioncount\\ #1}\n"
-    "  \\smallskip\\noindent\n"
-    "}\n\n"
-
-    "\\newcount\\subsubsectioncount\n"
-    "\\def\\subsubsection #1\n"
-    "\\par{\\smallskip\n"
-    "  \\advance \\subsubsectioncount by 1\n"
-    "  {\\noindent\\the\\sectioncount.\\the\\subsectioncount.\\the\\subsubsectioncount\\ #1}\n"
-    "  \\smallskip\\noindent\n"
-    "}\n\n"
+     (cond
+      ((string= (plist-get info :latex-class) "article")
+       (download-macro "https://raw.githubusercontent.com/paulserafini/ox-plaintex/master/article.tex"))
+      (t (download-macro "https://raw.githubusercontent.com/paulserafini/ox-plaintex/master/chapter.tex")))
 
      ;; Title and subtitle.
      (let* ((subtitle (plist-get info :subtitle))
