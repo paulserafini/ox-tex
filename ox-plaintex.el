@@ -1,5 +1,7 @@
 ;;; ox-plaintex.el --- Plain TeX Back-End for Org Export Engine -*- lexical-binding: t; -*-
 
+;;; Commentary:
+
 ;;; Code:
 
 (require 'cl-lib)
