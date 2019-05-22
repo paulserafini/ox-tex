@@ -118,9 +118,11 @@ channel.
 
 This function assumes TABLE has `org' as its `:type' property and
 `table' as its `:mode' attribute."
-  (let* ((alignment (org-plaintex--align-string table info)))
+  (let* ((alignment (org-plaintex--align-string table info))
+	 (caption (org-latex--caption/label-string table info)))
     ;; Prepare the final format string for the table.
-    (format "$$\\vbox{\\halign{\n\\tstrut%s\\cr\n%s}}$$"
+    (format "$$\\vbox{%s\\noindent\\hfil\\vbox{\\halign{\n\\tstrut%s\\cr\n%s}}\\hfil}$$"
+	    caption
     	    alignment
     	    contents)))
 
@@ -334,6 +336,13 @@ holding export options."
       ((string= (plist-get info :latex-class) "article")
        (download-macro "https://raw.githubusercontent.com/paulserafini/ox-plaintex/master/article.tex"))
       (t (download-macro "https://raw.githubusercontent.com/paulserafini/ox-plaintex/master/book.tex")))
+
+
+     "\n"
+     "\\newcount\\tableNumber\n"
+     "\\def\\caption#1{\\centerline{#1}}\n"
+     "\\def\\label#1{\\advance \\tableNumber by 1\n
+\\definexref{#1}{\\the\\tableNumber}{table}\n}"
 
      ;; Title and subtitle.
      (let* ((subtitle (plist-get info :subtitle))
