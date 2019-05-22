@@ -373,6 +373,8 @@ holding export options."
 	      (plist-get info :abstract))
 	 (format "\\makeabstract\n"))
 
+     "\\readtocfile\n"
+
      ;; Document's body.
      contents
 
