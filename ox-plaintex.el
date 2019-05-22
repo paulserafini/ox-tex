@@ -11,28 +11,50 @@
 (defvar org-latex-packages-alist)
 (defvar orgtbl-exp-regexp)
 
-;;; Add a minimal class with plain TeX style sections
-(unless (assoc "plaintex" org-latex-classes)
-  (add-to-list 'org-latex-classes
-	       '(("article"
-		  "[NO-DEFAULT-PACKAGES]
+(defcustom org-plaintex-classes
+  '(("article"
+     "[NO-DEFAULT-PACKAGES]
                    [NO-PACKAGES]"
-		  ("\n\\section %s" . "\n\\section %s")
-		  ("\n\\subsection %s" . "\n\\subsection %s")
-		  ("\n\\subsubsection %s" . "\n\\subsubsection %s"))
-		 ("book"
-		  "[NO-DEFAULT-PACKAGES]
+     ("\n\\section %s" . "\n\\section %s")
+     ("\n\\subsection %s" . "\n\\subsection %s")
+     ("\n\\subsubsection %s" . "\n\\subsubsection %s"))
+    ("book"
+     "[NO-DEFAULT-PACKAGES]
                    [NO-PACKAGES]"
-		  ("\n\\chapter %s" . "\n\\chapter %s")
-		  ("\n\\section %s" . "\n\\section %s")
-		  ("\n\\subsection %s" . "\n\\subsection %s")
-		  ("\n\\subsubsection %s" . "\n\\subsubsection %s")))))
+     ("\n\\chapter %s" . "\n\\chapter %s")
+     ("\n\\section %s" . "\n\\section %s")
+     ("\n\\subsection %s" . "\n\\subsection %s")
+     ("\n\\subsubsection %s" . "\n\\subsubsection %s")))
+  "Alist of LaTeX classes and associated header and structure.
+If #+LATEX_CLASS is set in the buffer, use its value and the
+associated information."
+  :group 'org-export-plaintex
+  :type '(repeat
+	  (list (string :tag "LaTeX class")
+		(string :tag "LaTeX header")
+		(repeat :tag "Levels" :inline t
+			(choice
+			 (cons :tag "Heading"
+			       (string :tag "  numbered")
+			       (string :tag "unnumbered"))
+			 (list :tag "Environment"
+			       (string :tag "Opening   (numbered)")
+			       (string :tag "Closing   (numbered)")
+			       (string :tag "Opening (unnumbered)")
+			       (string :tag "Closing (unnumbered)"))
+			 (function :tag "Hook computing sectioning"))))))
 
 (defgroup org-export-plaintex nil
   "Options specific for using the plaintex class in LaTeX export."
   :tag "Org plaintex"
   :group 'org-export
   :version "25.3")
+
+(defcustom org-plaintex-default-class "article"
+  "The default LaTeX class."
+  :group 'org-export-latex
+  :type '(string :tag "LaTeX class"))
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;  Alignment                                                               ;;;
@@ -231,7 +253,8 @@ channel."
        ((?T "As plain TeX buffer" org-plaintex-export-as-latex)
 	(?t "As plain TeX file" org-plaintex-export-to-latex)))
   :options-alist
-  '((:latex-class "LATEX_CLASS" nil "plaintex" t)
+  '((:plaintex-class "LATEX_CLASS" nil org-plaintex-default-class t)
+    (:plaintex-classes nil nil org-plaintex-classes)
     (:abstract "ABSTRACT" nil nil parse)
     (:plaintex-text-markup-alist nil nil org-plaintex-text-markup-alist))
   :translate-alist
