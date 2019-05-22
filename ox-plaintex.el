@@ -150,13 +150,13 @@ This function assumes TABLE has `org' as its `:type' property and
   "Transcode a TABLE-ROW element from Org to LaTeX.
 CONTENTS is the contents of the row.  INFO is a plist used as
 a communication channel."
-    (if (eq (org-element-property :type table-row) 'rule)
-	(cond
-	 ((not (org-export-get-previous-element table-row info)) "\\toprule")
-	 ((not (org-export-get-next-element table-row info)) "\\bottomrule")
-	 (t "\\midrule"))
-      (concat
-       contents "\\cr\n")))
+  (if (eq (org-element-property :type table-row) 'rule)
+      (cond
+       ((not (org-export-get-previous-element table-row info)) "\\toprule")
+       ((not (org-export-get-next-element table-row info)) "\\bottomrule")
+       (t "\\midrule"))
+    (concat
+     contents "\\cr\n")))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -177,11 +177,11 @@ holding contextual information."
 CONTENTS is nil.  INFO is a plist holding contextual
 information."
   (when (org-string-nw-p (org-element-property :value example-block))
-      (org-latex--wrap-label
-       example-block
-       (format "\\verbatim|%s|\\endverbatim"
-	       (org-export-format-code-default example-block info))
-       info)))
+    (org-latex--wrap-label
+     example-block
+     (format "\\verbatim|%s|\\endverbatim"
+	     (org-export-format-code-default example-block info))
+     info)))
 
 ;;; Quote
 (defun org-plaintex-quote-block (quote-block contents info)
@@ -327,7 +327,7 @@ holding export options."
 
 ;;; Export to a buffer
 (defun org-plaintex-export-as-latex
-  (&optional async subtreep visible-only body-only ext-plist)
+    (&optional async subtreep visible-only body-only ext-plist)
   "Export current buffer as a plain TeX buffer."
   (interactive)
   (org-export-to-buffer 'plaintex "*Org PLAIN TEX Export*"
@@ -335,7 +335,7 @@ holding export options."
 
 ;;; Export to a .tex file
 (defun org-plaintex-export-to-latex
-  (&optional async subtreep visible-only body-only ext-plist)
+    (&optional async subtreep visible-only body-only ext-plist)
   "Export current buffer as a plain TeX file."
   (interactive)
   (let ((file (org-export-output-file-name ".tex" subtreep)))
