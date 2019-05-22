@@ -14,12 +14,19 @@
 ;;; Add a minimal class with plain TeX style sections
 (unless (assoc "plaintex" org-latex-classes)
   (add-to-list 'org-latex-classes
-	       '("plaintex"
-		 "[NO-DEFAULT-PACKAGES]
-                  [NO-PACKAGES]"
-		 ("\n\\section %s" . "\n\\section %s")
-		 ("\n\\subsection %s" . "\n\\subsection %s")
-		 ("\n\\subsubsection %s" . "\n\\subsubsection %s"))))
+	       '(("article"
+		  "[NO-DEFAULT-PACKAGES]
+                   [NO-PACKAGES]"
+		  ("\n\\section %s" . "\n\\section %s")
+		  ("\n\\subsection %s" . "\n\\subsection %s")
+		  ("\n\\subsubsection %s" . "\n\\subsubsection %s"))
+		 ("book"
+		  "[NO-DEFAULT-PACKAGES]
+                   [NO-PACKAGES]"
+		  ("\n\\chapter %s" . "\n\\chapter %s")
+		  ("\n\\section %s" . "\n\\section %s")
+		  ("\n\\subsection %s" . "\n\\subsection %s")
+		  ("\n\\subsubsection %s" . "\n\\subsubsection %s")))))
 
 (defgroup org-export-plaintex nil
   "Options specific for using the plaintex class in LaTeX export."
