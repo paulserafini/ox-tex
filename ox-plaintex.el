@@ -333,7 +333,7 @@ holding export options."
 	       (org-export-data (plist-get info :macros) info)))
       ((string= (plist-get info :latex-class) "article")
        (download-macro "https://raw.githubusercontent.com/paulserafini/ox-plaintex/master/article.tex"))
-      (t (download-macro "https://raw.githubusercontent.com/paulserafini/ox-plaintex/master/chapter.tex")))
+      (t (download-macro "https://raw.githubusercontent.com/paulserafini/ox-plaintex/master/book.tex")))
 
      ;; Title and subtitle.
      (let* ((subtitle (plist-get info :subtitle))
