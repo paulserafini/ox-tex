@@ -128,16 +128,17 @@ This function assumes TABLE has `org' as its `:type' property and
 `table' as its `:mode' attribute."
   (let* ((alignment (org-plaintex--align-string table info))
 	 (label (org-latex--label table info nil t))
-	 (caption (org-export-get-caption table)))
-    (format "$$\\vbox{
+	 (caption (org-export-data (org-export-get-caption table) info)))
+    (format "\\advance \\tableNumber by 1
+$$\\vbox{
 %s\\halign{
 \\tstrut%s\\cr
-\\multispan %s %s \\cr
+\\multispan %s \\hfil Table \\the\\tableNumber %s \\hfil \\cr
 %s}}$$"
 	    label
     	    alignment
 	    (how-many-str "#" alignment)
-	    caption
+	    (if caption (concat ": " caption) "")
     	    contents)))
 
 ;; Concatenate rows with rules + \cr at the end of each line
