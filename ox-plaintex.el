@@ -109,13 +109,13 @@ centered."
 	  info)
 	(string-join align " & "))))
 
+;; https://stackoverflow.com/a/11848341
 (defun how-many-str (regexp str)
   (loop with start = 0
         for count from 0
         while (string-match regexp str start)
         do (setq start (match-end 0))
         finally return count))
-(how-many-str "a" "aaa")
 
 (defun org-plaintex--org-table (table contents info)
   "Return appropriate LaTeX code for an Org table.
