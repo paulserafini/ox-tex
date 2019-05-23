@@ -109,6 +109,14 @@ centered."
 	  info)
 	(string-join align " & "))))
 
+(defun how-many-str (regexp str)
+  (loop with start = 0
+        for count from 0
+        while (string-match regexp str start)
+        do (setq start (match-end 0))
+        finally return count))
+(how-many-str "a" "aaa")
+
 (defun org-plaintex--org-table (table contents info)
   "Return appropriate LaTeX code for an Org table.
 
@@ -119,11 +127,17 @@ channel.
 This function assumes TABLE has `org' as its `:type' property and
 `table' as its `:mode' attribute."
   (let* ((alignment (org-plaintex--align-string table info))
-	 (caption (org-latex--caption/label-string table info)))
-    ;; Prepare the final format string for the table.
-    (format "$$\\vbox{%s\\noindent\\hfil\\vbox{\\halign{\n\\tstrut%s\\cr\n%s}}\\hfil}$$"
-	    caption
+	 (label (org-latex--label table info nil t))
+	 (caption (org-export-get-caption table)))
+    (format "$$\\vbox{
+%s\\halign{
+\\tstrut%s\\cr
+\\multispan %s %s \\cr
+%s}}$$"
+	    label
     	    alignment
+	    (how-many-str "#" alignment)
+	    caption
     	    contents)))
 
 ;; Concatenate rows with rules + \cr at the end of each line
