@@ -396,7 +396,8 @@ holding export options."
 	      (plist-get info :abstract))
 	 (format "\\makeabstract\n"))
 
-     "\\readtocfile\n"
+     (if (string= (plist-get info :latex-class) "book")
+	 (format "\\readtocfile\n"))
 
      ;; Document's body.
      contents
