@@ -384,7 +384,7 @@ holding export options."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;				Lists                                          ;;
+;;			     Enumeration                                       ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Plain List
@@ -518,7 +518,7 @@ contextual information."
   (org-plaintex--text-markup contents 'bold info))
 
 ;;; Code
-(defun org-latex-code (code _contents info)
+(defun org-plaintex-code (code _contents info)
   "Transcode a CODE object from Org to LaTeX.
 CONTENTS is nil.  INFO is a plist used as a communication
 channel."
