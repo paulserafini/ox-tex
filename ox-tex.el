@@ -194,7 +194,7 @@ contextual information."
        ((?T "As plain TeX buffer" org-tex-export-as-latex)
 	(?t "As plain TeX file" org-tex-export-to-latex)))
   :options-alist
-  '((:tex-class "LATEX_CLASS" nil org-tex-default-class t)
+  '((:tex-class "TEX_CLASS" nil org-tex-default-class t)
     (:tex-classes nil nil org-tex-classes)
     (:macros "MACROS" nil nil parse)
     (:abstract "ABSTRACT" nil nil parse)
@@ -353,7 +353,7 @@ holding export options."
       ((plist-get info :macros)
        (format "\\input %s\n"
 	       (org-export-data (plist-get info :macros) info)))
-      ((string= (plist-get info :latex-class) "article")
+      ((string= (plist-get info :tex-class) "article")
        (download-macro "https://raw.githubusercontent.com/paulserafini/ox-tex/master/article.tex"))
       (t (download-macro "https://raw.githubusercontent.com/paulserafini/ox-tex/master/book.tex")))
 
@@ -388,14 +388,14 @@ holding export options."
          (format "\\keywords{Key words: \\it %s}\n"
 		 (org-export-data (plist-get info :keywords) info))))
 
-     (if (string= (plist-get info :latex-class) "book")
+     (if (string= (plist-get info :tex-class) "book")
 	 (format "\\maketitle\n"))
 
-     (if (and (string= (plist-get info :latex-class) "book")
+     (if (and (string= (plist-get info :tex-class) "book")
 	      (plist-get info :abstract))
 	 (format "\\makeabstract\n"))
 
-     (if (string= (plist-get info :latex-class) "book")
+     (if (string= (plist-get info :tex-class) "book")
 	 (format "\\readtocfile\n"))
 
 
@@ -513,7 +513,7 @@ contextual information."
 CONTENTS holds the contents of the headline.  INFO is a plist
 holding contextual information."
   (unless (org-element-property :footnote-section-p headline)
-    (let* ((class (plist-get info :latex-class))
+    (let* ((class (plist-get info :tex-class))
 	   (level (org-export-get-relative-level headline info))
 	   (numberedp (org-export-numbered-headline-p headline info))
 	   (class-sectioning (assoc class (plist-get info :tex-classes)))
