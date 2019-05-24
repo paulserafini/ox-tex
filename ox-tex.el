@@ -46,7 +46,7 @@ channel."
 	  contents))
 
 (defun org-tex--math-table (table info)
-  "Return appropriate LaTeX code for a matrix.
+  "Return appropriate plain TeX code for a matrix.
 
 TABLE is the table type element to transcode.  INFO is a plist
 used as a communication channel.
@@ -73,7 +73,7 @@ This function assumes TABLE has `org' as its `:type' property and
 
 ;; Plain TeX style table alignment
 (defun org-tex--align-string (table info &optional math?)
-  "Return an appropriate LaTeX alignment string.
+  "Return an appropriate plain TeX alignment string.
 TABLE is the considered table.  INFO is a plist used as
 a communication channel.  When optional argument MATH? is
 non-nil, TABLE is meant to be a matrix, where all cells are
@@ -105,6 +105,10 @@ centered."
 
 ;; https://stackoverflow.com/a/11848341
 (defun how-many-str (regexp str)
+  "Return the number of occurrences of a substring in a string.
+
+REGEXP is a string of interest and STR is a substring to be counted."
+
   (loop with start = 0
         for count from 0
         while (string-match regexp str start)
@@ -112,7 +116,7 @@ centered."
         finally return count))
 
 (defun org-tex--org-table (table contents info)
-  "Return appropriate LaTeX code for an Org table.
+  "Return appropriate plain TeX code for an Org table.
 
 TABLE is the table type element to transcode.  CONTENTS is its
 contents, as a string.  INFO is a plist used as a communication
@@ -191,13 +195,13 @@ contextual information."
 (org-export-define-derived-backend 'tex 'latex
   :menu-entry
   '(?l 1
-       ((?T "As plain TeX buffer" org-tex-export-as-latex)
-	(?t "As plain TeX file" org-tex-export-to-latex)))
+       ((?T "As plain TeX buffer" org-tex-export-as-tex)
+	(?t "As plain TeX file" org-tex-export-to-tex)))
   :options-alist
-  '((:tex-class "TEX_CLASS" nil org-tex-default-class t)
-    (:tex-classes nil nil org-tex-classes)
+  '((:abstract "ABSTRACT" nil nil parse)
     (:macros "MACROS" nil nil parse)
-    (:abstract "ABSTRACT" nil nil parse)
+    (:tex-class "TEX_CLASS" nil org-tex-default-class t)
+    (:tex-classes nil nil org-tex-classes)
     (:tex-text-markup-alist nil nil org-tex-text-markup-alist))
   :translate-alist
   '((bold . org-tex-bold)
@@ -235,8 +239,8 @@ contextual information."
      ("\n\\section %s" . "\n\\section %s")
      ("\n\\subsection %s" . "\n\\subsection %s")
      ("\n\\subsubsection %s" . "\n\\subsubsection %s")))
-  "Alist of LaTeX classes and associated header and structure.
-If #+LATEX_CLASS is set in the buffer, use its value and the
+  "Alist of plain TeX classes and associated header and structure.
+If #+TEX_CLASS is set in the buffer, use its value and the
 associated information."
   :group 'org-export-tex
   :type '(repeat
@@ -255,13 +259,13 @@ associated information."
 			 (function :tag "Hook computing sectioning"))))))
 
 (defgroup org-export-tex nil
-  "Options specific for using the tex class in LaTeX export."
+  "Options specific for using the tex class in plain TeX export."
   :tag "Org tex"
   :group 'org-export
   :version "25.3")
 
 (defcustom org-tex-default-class "article"
-  "The default LaTeX class."
+  "The default plain TeX class."
   :group 'org-export-latex
   :type '(string :tag "LaTeX class"))
 
@@ -339,13 +343,12 @@ containing export options.  Modify DATA by side-effect and return it."
 
 ;; Plain TeX file template
 (defun org-tex-template (contents info)
-  "Return complete document string after LaTeX conversion.
+  "Return complete document string after plain TeX conversion.
 CONTENTS is the transcoded contents string.  INFO is a plist
 holding export options."
   (let ((title (org-export-data (plist-get info :title) info))
         (spec (org-tex--format-spec info)))
     (concat
-
 
      ;; If a macros file is specified, \input that
      ;; Otherwise download macros from github
@@ -405,10 +408,10 @@ holding export options."
      contents
 
      ;; Document end.
-     "\\bye")))
+     "\n\\bye")))
 
 ;;; Export to a buffer
-(defun org-tex-export-as-latex
+(defun org-tex-export-as-tex
     (&optional async subtreep visible-only body-only ext-plist)
   "Export current buffer as a plain TeX buffer."
   (interactive)
@@ -416,7 +419,7 @@ holding export options."
     async subtreep visible-only body-only ext-plist (lambda () (plain-TeX-mode))))
 
 ;;; Export to a .tex file
-(defun org-tex-export-to-latex
+(defun org-tex-export-to-tex
     (&optional async subtreep visible-only body-only ext-plist)
   "Export current buffer as a plain TeX file."
   (interactive)
@@ -606,12 +609,12 @@ holding contextual information."
 
 ;;; Markup
 (defcustom org-tex-text-markup-alist '((bold . "{\\bf %s}")
-					    (code . "{\\tt %s}")
-					    (italic . "{\\it %s}")
-					    (strike-through . "\\sout{%s}")
-					    (underline . "$\\underline{\\rm %s}$")
-					    (verbatim . "{\\tt %s}"))
-  "Alist of LaTeX expressions to convert text markup."
+				       (code . "{\\tt %s}")
+				       (italic . "{\\it %s}")
+				       (strike-through . "\\sout{%s}")
+				       (underline . "$\\underline{\\rm %s}$")
+				       (verbatim . "{\\tt %s}"))
+  "Alist of plain TeX expressions to convert text markup."
   :group 'org-export-tex
   :version "26.1"
   :package-version '(Org . "8.3")
@@ -622,7 +625,7 @@ holding contextual information."
 (defun org-tex--text-markup (text markup info)
   "Format TEXT depending on MARKUP text markup.
 INFO is a plist used as a communication channel.  See
-`org-latex-text-markup-alist' for details."
+`org-tex-text-markup-alist' for details."
   (let ((fmt (cdr (assq markup (plist-get info :tex-text-markup-alist)))))
     (cl-case fmt
       ;; No format string: Return raw text.
