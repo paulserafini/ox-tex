@@ -61,3 +61,6 @@
   {\noindent\the\sectioncount.\the\subsectioncount.\the\subsubsectioncount\ #1}
   \smallskip\noindent
 }
+
+\newcount\tablecount
+\def\label#1{\advance \tableNumber by 1 \definexref{#1}{\the\tableNumber}{table}}

@@ -129,11 +129,11 @@ This function assumes TABLE has `org' as its `:type' property and
   (let* ((alignment (org-plaintex--align-string table info))
 	 (label (org-latex--label table info nil t))
 	 (caption (org-export-data (org-export-get-caption table) info)))
-    (format "\\advance \\tableNumber by 1
+    (format "\\advance \\tablecount by 1
 $$\\vbox{
 %s\\halign{
 \\tstrut%s\\cr
-\\multispan %s \\hfil Table \\the\\tableNumber %s \\hfil \\cr
+\\multispan %s \\hfil Table \\the\\tablecount %s \\hfil \\cr
 %s}}$$"
 	    label
     	    alignment
@@ -351,13 +351,6 @@ holding export options."
       ((string= (plist-get info :latex-class) "article")
        (download-macro "https://raw.githubusercontent.com/paulserafini/ox-plaintex/master/article.tex"))
       (t (download-macro "https://raw.githubusercontent.com/paulserafini/ox-plaintex/master/book.tex")))
-
-
-     "\n"
-     "\\newcount\\tableNumber\n"
-     "\\def\\caption#1{\\centerline{#1}}\n"
-     "\\def\\label#1{\\advance \\tableNumber by 1\n
-\\definexref{#1}{\\the\\tableNumber}{table}\n}"
 
      ;; Title and subtitle.
      (let* ((subtitle (plist-get info :subtitle))
