@@ -645,12 +645,14 @@ INFO is a plist used as a communication channel.  See
 			((equal m "\\") "$\\backslash$")
 			((equal m "~") "$\\sim$")
 			((equal m "^") "$\\hat{}$")
-			(t (org-latex--protect-text m))))
+			(t (org-plaintex--protect-text m))))
 		text nil t)))
       ;; Else use format string.
       (t (format fmt text)))))
 
-
+(defun org-plaintex--protect-text (text)
+  "Protect special characters in string TEXT and return it."
+  (replace-regexp-in-string "[\\{}$%&_#~^]" "\\\\\\&" text))
 
 
 (provide 'ox-plaintex)
