@@ -7,12 +7,6 @@
 (require 'cl-lib)
 (require 'ox-latex)
 
-(defvar org-latex-default-packages-alist)
-(defvar org-latex-packages-alist)
-(defvar orgtbl-exp-regexp)
-
-
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;			      Alignment                                        ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
