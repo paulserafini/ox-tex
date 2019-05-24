@@ -278,26 +278,64 @@ associated information."
 (defun org-plaintex--format-spec (info)
   "Create a format-spec for document meta-data.
 INFO is a plist used as a communication channel."
-  (let ((language (let ((lang (plist-get info :language)))
-		    (or (cdr (assoc-string lang org-latex-babel-language-alist t))
-			(nth 1 (assoc-string lang org-latex-polyglossia-language-alist t))
-			lang))))
     `((?a . ,(org-export-data (plist-get info :author) info))
-      (?A . ,(org-export-data (org-latex--wrap-latex-math-block
+      (?A . ,(org-export-data (org-plaintex--wrap-plaintex-math-block
 			       (plist-get info :abstract) info)
 			      info))
       (?t . ,(org-export-data (plist-get info :title) info))
-      (?k . ,(org-export-data (org-latex--wrap-latex-math-block
+      (?k . ,(org-export-data (org-plaintex--wrap-plaintex-math-block
 			       (plist-get info :keywords) info)
 			      info))
-      (?d . ,(org-export-data (org-latex--wrap-latex-math-block
+      (?d . ,(org-export-data (org-plaintex--wrap-plaintex-math-block
 			       (plist-get info :description) info)
 			      info))
       (?c . ,(plist-get info :creator))
-      (?l . ,language)
-      (?L . ,(capitalize language))
-      (?D . ,(org-export-get-date info)))))
+      (?D . ,(org-export-get-date info))))
 
+(defun org-plaintex--wrap-plaintex-math-block (data info)
+  "Merge contiguous math objects in a pseudo-object container.
+DATA is a parse tree or a secondary string.  INFO is a plist
+containing export options.  Modify DATA by side-effect and return it."
+  (let ((valid-object-p
+	 ;; Non-nil when OBJECT can be added to a latex math block.
+	 (lambda (object)
+	   (pcase (org-element-type object)
+	     (`entity (org-element-property :latex-math-p object))
+	     (`latex-fragment
+	      (let ((value (org-element-property :value object)))
+		(or (string-prefix-p "\\(" value)
+		    (string-match-p "\\`\\$[^$]" value))))))))
+    (org-element-map data '(entity latex-fragment)
+      (lambda (object)
+	;; Skip objects already wrapped.
+	(when (and (not (eq (org-element-type
+			     (org-element-property :parent object))
+			    'latex-math-block))
+		   (funcall valid-object-p object))
+	  (let ((math-block (list 'latex-math-block nil))
+		(next-elements (org-export-get-next-element object info t))
+		(last object))
+	    ;; Wrap MATH-BLOCK around OBJECT in DATA.
+	    (org-element-insert-before math-block object)
+	    (org-element-extract-element object)
+	    (org-element-adopt-elements math-block object)
+	    (when (zerop (or (org-element-property :post-blank object) 0))
+	      ;; MATH-BLOCK swallows consecutive math objects.
+	      (catch 'exit
+		(dolist (next next-elements)
+		  (unless (funcall valid-object-p next) (throw 'exit nil))
+		  (org-element-extract-element next)
+		  (org-element-adopt-elements math-block next)
+		  ;; Eschew the case: \beta$x$ -> \(\betax\).
+		  (org-element-put-property last :post-blank 1)
+		  (setq last next)
+		  (when (> (or (org-element-property :post-blank next) 0) 0)
+		    (throw 'exit nil)))))
+	    (org-element-put-property
+	     math-block :post-blank (org-element-property :post-blank last)))))
+      info nil '(latex-math-block) t)
+    ;; Return updated DATA.
+    data))
 
 ;; Plain TeX file template
 (defun org-plaintex-template (contents info)
