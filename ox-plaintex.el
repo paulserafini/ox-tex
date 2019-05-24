@@ -158,57 +158,30 @@ a communication channel."
   "Transcode a CENTER-BLOCK element from Org to LaTeX.
 CONTENTS holds the contents of the center block.  INFO is a plist
 holding contextual information."
-  (org-latex--wrap-label
-   center-block (format "\\begincenter\n%s\\endcenter" contents) info))
+  (format "\\begincenter\n%s\\endcenter" contents))
 
 ;;; Example
 (defun org-plaintex-example-block (example-block _contents info)
   "Transcode an EXAMPLE-BLOCK element from Org to LaTeX.
 CONTENTS is nil.  INFO is a plist holding contextual
 information."
-  (when (org-string-nw-p (org-element-property :value example-block))
-    (org-latex--wrap-label
-     example-block
-     (format "\\verbatim|%s|\\endverbatim"
-	     (org-export-format-code-default example-block info))
-     info)))
+  (format "\\verbatim| %s|\\endverbatim"
+	  (org-export-format-code-default example-block info)))
 
 ;;; Quote
 (defun org-plaintex-quote-block (quote-block contents info)
   "Transcode a QUOTE-BLOCK element from Org to LaTeX.
 CONTENTS holds the contents of the block.  INFO is a plist
 holding contextual information."
-  (org-latex--wrap-label
-   quote-block (format "\\beginquote\n%s\\endquote" contents) info))
+  (format "\\beginquote\n%s\\endquote" contents))
 
-;;;; Src
+;;;; Source
 (defun org-plaintex-src-block (src-block _contents info)
   "Transcode a SRC-BLOCK element from Org to LaTeX.
 CONTENTS holds the contents of the item.  INFO is a plist holding
 contextual information."
-  (when (org-string-nw-p (org-element-property :value src-block))
-    (let* ((lang (org-element-property :language src-block))
-	   (caption (org-element-property :caption src-block))
-	   (caption-above-p (org-latex--caption-above-p src-block info))
-	   (label (org-element-property :name src-block))
-	   (custom-env (and lang
-			    (cadr (assq (intern lang)
-					org-latex-custom-lang-environments))))
-	   (num-start (org-export-get-loc src-block info))
-	   (retain-labels (org-element-property :retain-labels src-block))
-	   (attributes (org-export-read-attribute :attr_latex src-block))
-	   (float (plist-get attributes :float))
-	   (listings (plist-get info :latex-listings)))
-      (concat (format "\\verbatim|%s|endverbatim"
-		      (org-export-format-code-default src-block info))))))
-
-;;; Verbatim
-(defun org-latex-verbatim (verbatim _contents info)
-  "Transcode a VERBATIM object from Org to LaTeX.
-CONTENTS is nil.  INFO is a plist used as a communication
-channel."
-  (org-plaintex--text-markup
-   (org-element-property :value verbatim) 'verbatim info))
+  (format "\\verbatim| %s|endverbatim"
+	  (org-export-format-code-default src-block info)))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
