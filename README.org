@@ -1,4 +1,4 @@
-* ox-plaintex
+* ox-tex
 
 This is an export backend for Org which provides plain TeX (as opposed to LaTeX) export. It is derived from ox-latex. As yet, it enables the export of:
  - Emphasis and monospace markup (*bold*, /italic/, _underlined_, +strike-through+, =verbatim=, and ~code~)
@@ -13,7 +13,6 @@ Anything else will be exported in LaTeX format.
 
 To install ox-plaintex, put ox-plaintex.el in a directory which is included in your ~load path~, then add the following line to your init file:
 #+BEGIN_EXAMPLE
-(load "ox-plaintex")
-(require 'ox-plaintex)
+(load "ox-tex")
 #+END_EXAMPLE
 For TeX compilation you may also need to install the [[https://tug.org/eplain/doc/eplain.html][Eplain]] macro package. On Debian and Ubuntu, Eplain is part of the "texlive-formats-extra" package.
