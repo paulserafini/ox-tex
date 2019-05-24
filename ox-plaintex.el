@@ -538,7 +538,7 @@ channel."
     (format "$%s$" (org-trim contents))))
 
 ;;; Italic
-(defun org-latex-italic (_italic contents info)
+(defun org-plaintex-italic (_italic contents info)
   "Transcode ITALIC from Org to LaTeX.
 CONTENTS is the text with italic markup.  INFO is a plist holding
 contextual information."
