@@ -557,7 +557,7 @@ CONTENTS is the contents of the object."
   (format "^{%s}" contents))
 
 ;;; Underline
-(defun org-latex-underline (_underline contents info)
+(defun org-plaintex-underline (_underline contents info)
   "Transcode UNDERLINE from Org to LaTeX.
 CONTENTS is the text with underline markup.  INFO is a plist
 holding contextual information."
@@ -568,7 +568,7 @@ holding contextual information."
 					    (code . "{\\tt %s}")
 					    (italic . "{\\it %s}")
 					    (strike-through . "\\sout{%s}")
-					    (underline . "{\\underline %s}")
+					    (underline . "$\\underline{\\rm %s}$")
 					    (verbatim . "{\\tt %s}"))
   "Alist of LaTeX expressions to convert text markup."
   :group 'org-export-plaintex
