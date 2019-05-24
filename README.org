@@ -11,7 +11,7 @@ Anything else will be exported in LaTeX format.
 
 * Installation
 
-To install ox-plaintex, put ox-plaintex.el in a directory which is included in your ~load path~, then add the following line to your init file:
+To install ox-tex, put ox-tex.el in a directory which is included in your ~load path~, then add the following line to your init file:
 #+BEGIN_EXAMPLE
 (load "ox-tex")
 #+END_EXAMPLE
