@@ -432,19 +432,16 @@ CONTENTS is the contents of the list.  INFO is a plist holding
 contextual information."
   (let* ((type (org-element-property :type plain-list))
 	 (attr (org-export-read-attribute :attr_latex plain-list))
-	 (latex-type (let ((env (plist-get attr :environment)))
+	 (list-type (let ((env (plist-get attr :environment)))
 		       (cond (env (format "%s" env))
 			     ((eq type 'ordered) "numberedlist")
 			     ((eq type 'descriptive) "description")
 			     (t "orderedlist")))))
-    (org-latex--wrap-label
-     plain-list
      (format "\\%s%s\n%s\\end%s"
-	     latex-type
+	     list-type
 	     (or (plist-get attr :options) "")
 	     contents
-	     latex-type)
-     info)))
+	     list-type)))
 
 ;; List counters
 (defun org-plaintex-item (item contents info)
