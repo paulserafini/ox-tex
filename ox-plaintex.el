@@ -205,7 +205,7 @@ contextual information."
     (code . org-plaintex-code)
     (example-block . org-plaintex-example-block)
     (footnote-reference . org-plaintex-footnote-reference)
-    (headline . org-latex-headline)
+    (headline . org-plaintex-headline)
     (italic . org-plaintex-italic)
     (item . org-plaintex-item)
     (latex-math-block . org-plaintex-math-block)
@@ -469,6 +469,42 @@ contextual information."
 	     (t " "))
 	    (and contents (org-trim contents)))))
 
+(defun org-plaintex-headline (headline contents info)
+  "Transcode a HEADLINE element from Org to LaTeX.
+CONTENTS holds the contents of the headline.  INFO is a plist
+holding contextual information."
+  (unless (org-element-property :footnote-section-p headline)
+    (let* ((class (plist-get info :latex-class))
+	   (level (org-export-get-relative-level headline info))
+	   (numberedp (org-export-numbered-headline-p headline info))
+	   (class-sectioning (assoc class (plist-get info :plaintex-classes)))
+	   ;; Section formatting will set two placeholders: one for
+	   ;; the title and the other for the contents.
+	   (section-fmt
+	    (let ((sec (if (functionp (nth 2 class-sectioning))
+			   (funcall (nth 2 class-sectioning) level numberedp)
+			 (nth (1+ level) class-sectioning))))
+	      (cond
+	       ;; No section available for that LEVEL.
+	       ((not sec) nil)
+	       ;; Section format directly returned by a function.  Add
+	       ;; placeholder for contents.
+	       ((stringp sec) (concat sec "\n%s"))
+	       ;; (numbered-section . unnumbered-section)
+	       ((not (consp (cdr sec)))
+		(concat (funcall (if numberedp #'car #'cdr) sec) "\n%s"))
+	       ;; (numbered-open numbered-close)
+	       ((= (length sec) 2)
+		(when numberedp (concat (car sec) "\n%s" (nth 1 sec))))
+	       ;; (num-in num-out no-num-in no-num-out)
+	       ((= (length sec) 4)
+		(if numberedp (concat (car sec) "\n%s" (nth 1 sec))
+		  (concat (nth 2 sec) "\n%s" (nth 3 sec)))))))
+	   (text (org-export-data (org-element-property :title headline) info)))
+      (if section-fmt
+	  (concat (format section-fmt text "") "\n" contents)
+	  (concat "{\\bf" text "}\n\n" contents)))))
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;				Markup                                         ;;
@@ -577,177 +613,6 @@ INFO is a plist used as a communication channel.  See
       (t (format fmt text)))))
 
 
-
-
-
-
-
-(defun org-plaintex--label (datum info &optional force full)
-  "Return an appropriate label for DATUM.
-DATUM is an element or a `target' type object.  INFO is the
-current export state, as a plist.
-
-Return nil if element DATUM has no NAME or VALUE affiliated
-keyword or no CUSTOM_ID property, unless FORCE is non-nil.  In
-this case always return a unique label.
-
-Eventually, if FULL is non-nil, wrap label within \"\\label{}\"."
-  (let* ((type (org-element-type datum))
-	 (user-label
-	  (org-element-property
-	   (cl-case type
-	     ((headline inlinetask) :CUSTOM_ID)
-	     (target :value)
-	     (otherwise :name))
-	   datum))
-	 (label
-	  (and (or user-label force)
-	       (if (and user-label (plist-get info :latex-prefer-user-labels))
-		   user-label
-		 (concat (cl-case type
-			   (headline "sec:")
-			   (table "tab:")
-			   (latex-environment
-			    (and (string-match-p
-				  org-latex-math-environments-re
-				  (org-element-property :value datum))
-				 "eq:"))
-			   (paragraph
-			    (and (org-element-property :caption datum)
-				 "fig:")))
-			 (org-export-get-reference datum info))))))
-    (cond ((not full) label)
-	  (label (format ""
-			 label
-			 (if (eq type 'target) "" "\n")))
-	  (t ""))))
-
-(defun org-latex-headline (headline contents info)
-  "Transcode a HEADLINE element from Org to LaTeX.
-CONTENTS holds the contents of the headline.  INFO is a plist
-holding contextual information."
-  (unless (org-element-property :footnote-section-p headline)
-    (let* ((class (plist-get info :latex-class))
-	   (level (org-export-get-relative-level headline info))
-	   (numberedp (org-export-numbered-headline-p headline info))
-	   (class-sectioning (assoc class (plist-get info :plaintex-classes)))
-	   ;; Section formatting will set two placeholders: one for
-	   ;; the title and the other for the contents.
-	   (section-fmt
-	    (let ((sec (if (functionp (nth 2 class-sectioning))
-			   (funcall (nth 2 class-sectioning) level numberedp)
-			 (nth (1+ level) class-sectioning))))
-	      (cond
-	       ;; No section available for that LEVEL.
-	       ((not sec) nil)
-	       ;; Section format directly returned by a function.  Add
-	       ;; placeholder for contents.
-	       ((stringp sec) (concat sec "\n%s"))
-	       ;; (numbered-section . unnumbered-section)
-	       ((not (consp (cdr sec)))
-		(concat (funcall (if numberedp #'car #'cdr) sec) "\n%s"))
-	       ;; (numbered-open numbered-close)
-	       ((= (length sec) 2)
-		(when numberedp (concat (car sec) "\n%s" (nth 1 sec))))
-	       ;; (num-in num-out no-num-in no-num-out)
-	       ((= (length sec) 4)
-		(if numberedp (concat (car sec) "\n%s" (nth 1 sec))
-		  (concat (nth 2 sec) "\n%s" (nth 3 sec)))))))
-	   ;; Create a temporary export back-end that hard-codes
-	   ;; "\underline" within "\section" and alike.
-	   (section-back-end
-	    (org-export-create-backend
-	     :parent 'latex
-	     :transcoders
-	     '((underline . (lambda (o c i) (format "\\underline{%s}" c))))))
-	   (text
-	    (org-export-data-with-backend
-	     (org-element-property :title headline) section-back-end info))
-	   (todo
-	    (and (plist-get info :with-todo-keywords)
-		 (let ((todo (org-element-property :todo-keyword headline)))
-		   (and todo (org-export-data todo info)))))
-	   (todo-type (and todo (org-element-property :todo-type headline)))
-	   (tags (and (plist-get info :with-tags)
-		      (org-export-get-tags headline info)))
-	   (priority (and (plist-get info :with-priority)
-			  (org-element-property :priority headline)))
-	   ;; Create the headline text along with a no-tag version.
-	   ;; The latter is required to remove tags from toc.
-	   (full-text (funcall (plist-get info :latex-format-headline-function)
-			       todo todo-type priority text tags info))
-	   ;; Associate \label to the headline for internal links.
-	   (headline-label (org-plaintex--label headline info t t))
-	   (pre-blanks
-	    (make-string (org-element-property :pre-blank headline) ?\n)))
-      (if (or (not section-fmt) (org-export-low-level-p headline info))
-	  ;; This is a deep sub-tree: export it as a list item.  Also
-	  ;; export as items headlines for which no section format has
-	  ;; been found.
-	  (let ((low-level-body
-		 (concat
-		  ;; If headline is the first sibling, start a list.
-		  (when (org-export-first-sibling-p headline info)
-		    (format "\\begin{%s}\n" (if numberedp 'enumerate 'itemize)))
-		  ;; Itemize headline
-		  "\\item"
-		  (and full-text
-		       (string-match-p "\\`[ \t]*\\[" full-text)
-		       "\\relax")
-		  " " full-text "\n"
-		  headline-label
-		  pre-blanks
-		  contents)))
-	    ;; If headline is not the last sibling simply return
-	    ;; LOW-LEVEL-BODY.  Otherwise, also close the list, before
-	    ;; any blank line.
-	    (if (not (org-export-last-sibling-p headline info)) low-level-body
-	      (replace-regexp-in-string
-	       "[ \t\n]*\\'"
-	       (format "\n\\\\end{%s}" (if numberedp 'enumerate 'itemize))
-	       low-level-body)))
-	;; This is a standard headline.  Export it as a section.  Add
-	;; an alternative heading when possible, and when this is not
-	;; identical to the usual heading.
-	(let ((opt-title
-	       (funcall (plist-get info :latex-format-headline-function)
-			todo todo-type priority
-			(org-export-data-with-backend
-			 (org-export-get-alt-title headline info)
-			 section-back-end info)
-			(and (eq (plist-get info :with-tags) t) tags)
-			info))
-	      ;; Maybe end local TOC (see `org-latex-keyword').
-	      (contents
-	       (concat
-		contents
-		(let ((case-fold-search t)
-		      (section
-		       (let ((first (car (org-element-contents headline))))
-			 (and (eq (org-element-type first) 'section) first))))
-		  (org-element-map section 'keyword
-		    (lambda (k)
-		      (and (equal (org-element-property :key k) "TOC")
-			   (let ((v (org-element-property :value k)))
-			     (and (string-match-p "\\<headlines\\>" v)
-				  (string-match-p "\\<local\\>" v)
-				  (format "\\stopcontents[level-%d]" level)))))
-		    info t)))))
-	  (if (and opt-title
-		   (not (equal opt-title full-text))
-		   (string-match "\\`\\\\\\(.+?\\){" section-fmt))
-	      (format (replace-match "\\1[%s]" nil nil section-fmt 1)
-		      ;; Replace square brackets with parenthesis
-		      ;; since square brackets are not supported in
-		      ;; optional arguments.
-		      (replace-regexp-in-string
-		       "\\[" "(" (replace-regexp-in-string "\\]" ")" opt-title))
-		      full-text
-		      (concat headline-label pre-blanks contents))
-	    ;; Impossible to add an alternative heading.  Fallback to
-	    ;; regular sectioning format string.
-	    (format section-fmt full-text
-		    (concat headline-label pre-blanks contents))))))))
 
 
 (provide 'ox-plaintex)
