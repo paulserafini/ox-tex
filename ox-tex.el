@@ -21,7 +21,7 @@
 
 ;;; Convert table to halign or matrix
 (defun org-tex-table (table contents info)
-  "Transcode a TABLE element from Org to LaTeX.
+  "Transcode a TABLE element from Org to plain TeX.
 CONTENTS is the contents of the table.  INFO is a plist holding
 contextual information."
   (if (eq (org-element-property :type table) 'table.el)
@@ -37,7 +37,7 @@ contextual information."
        (t (org-tex--org-table table contents info))))))
 
 (defun org-tex-matrices (matrices contents _info)
-  "Transcode a MATRICES element from Org to LaTeX.
+  "Transcode a MATRICES element from Org to plain TeX.
 CONTENTS is a string.  INFO is a plist used as a communication
 channel."
   (format (cl-case (org-element-property :markup matrices)
@@ -137,7 +137,7 @@ $$\\vbox{
 
 ;; Concatenate rows with rules + \cr at the end of each line
 (defun org-tex-table-row (table-row contents info)
-  "Transcode a TABLE-ROW element from Org to LaTeX.
+  "Transcode a TABLE-ROW element from Org to plain TeX.
 CONTENTS is the contents of the row.  INFO is a plist used as
 a communication channel."
   (if (eq (org-element-property :type table-row) 'rule)
@@ -155,14 +155,14 @@ a communication channel."
 
 ;;; Center
 (defun org-tex-center-block (center-block contents info)
-  "Transcode a CENTER-BLOCK element from Org to LaTeX.
+  "Transcode a CENTER-BLOCK element from Org to plain TeX.
 CONTENTS holds the contents of the center block.  INFO is a plist
 holding contextual information."
   (format "\\begincenter\n%s\\endcenter" contents))
 
 ;;; Example
 (defun org-tex-example-block (example-block _contents info)
-  "Transcode an EXAMPLE-BLOCK element from Org to LaTeX.
+  "Transcode an EXAMPLE-BLOCK element from Org to plain TeX.
 CONTENTS is nil.  INFO is a plist holding contextual
 information."
   (format "\\verbatim| %s|\\endverbatim"
@@ -170,14 +170,14 @@ information."
 
 ;;; Quote
 (defun org-tex-quote-block (quote-block contents info)
-  "Transcode a QUOTE-BLOCK element from Org to LaTeX.
+  "Transcode a QUOTE-BLOCK element from Org to plain TeX.
 CONTENTS holds the contents of the block.  INFO is a plist
 holding contextual information."
   (format "\\beginquote\n%s\\endquote" contents))
 
 ;;;; Source
 (defun org-tex-src-block (src-block _contents info)
-  "Transcode a SRC-BLOCK element from Org to LaTeX.
+  "Transcode a SRC-BLOCK element from Org to plain TeX.
 CONTENTS holds the contents of the item.  INFO is a plist holding
 contextual information."
   (format "\\verbatim| %s|endverbatim"
@@ -431,7 +431,7 @@ holding export options."
 
 ;; Plain List
 (defun org-tex-plain-list (plain-list contents info)
-  "Transcode a PLAIN-LIST element from Org to LaTeX.
+  "Transcode a PLAIN-LIST element from Org to plain TeX.
 CONTENTS is the contents of the list.  INFO is a plist holding
 contextual information."
   (let* ((type (org-element-property :type plain-list))
@@ -449,7 +449,7 @@ contextual information."
 
 ;; List counters
 (defun org-tex-item (item contents info)
-  "Transcode an ITEM element from Org to LaTeX.
+  "Transcode an ITEM element from Org to plain TeX.
 CONTENTS holds the contents of the item.  INFO is a plist holding
 contextual information."
   (let* ((counter
@@ -509,7 +509,7 @@ contextual information."
 	    (and contents (org-trim contents)))))
 
 (defun org-tex-headline (headline contents info)
-  "Transcode a HEADLINE element from Org to LaTeX.
+  "Transcode a HEADLINE element from Org to plain TeX.
 CONTENTS holds the contents of the headline.  INFO is a plist
 holding contextual information."
   (unless (org-element-property :footnote-section-p headline)
@@ -551,28 +551,28 @@ holding contextual information."
 
 ;;; Bold
 (defun org-tex-bold (_bold contents info)
-  "Transcode BOLD from Org to LaTeX.
+  "Transcode BOLD from Org to plain TeX.
 CONTENTS is the text with bold markup.  INFO is a plist holding
 contextual information."
   (org-tex--text-markup contents 'bold info))
 
 ;;; Code
 (defun org-tex-code (code _contents info)
-  "Transcode a CODE object from Org to LaTeX.
+  "Transcode a CODE object from Org to plain TeX.
 CONTENTS is nil.  INFO is a plist used as a communication
 channel."
   (org-tex--text-markup (org-element-property :value code) 'code info))
 
 ;;; Footnote
 (defun org-tex-footnote-reference (footnote-reference _contents info)
-  "Transcode a FOOTNOTE-REFERENCE element from Org to LaTeX.
+  "Transcode a FOOTNOTE-REFERENCE element from Org to plain TeX.
 CONTENTS is nil.  INFO is a plist holding contextual information."
   (let ((def (org-export-get-footnote-definition footnote-reference info)))
     (format "\\numberedfootnote{%s}" (org-trim (org-export-data def info)))))
 
 ;;; Inline math
 (defun org-tex-math-block (_math-block contents _info)
-  "Transcode a MATH-BLOCK object from Org to LaTeX.
+  "Transcode a MATH-BLOCK object from Org to plain TeX.
 CONTENTS is a string.  INFO is a plist used as a communication
 channel."
   (when (org-string-nw-p contents)
@@ -580,26 +580,26 @@ channel."
 
 ;;; Italic
 (defun org-tex-italic (_italic contents info)
-  "Transcode ITALIC from Org to LaTeX.
+  "Transcode ITALIC from Org to plain TeX.
 CONTENTS is the text with italic markup.  INFO is a plist holding
 contextual information."
   (org-tex--text-markup contents 'italic info))
 
 ;;; Subscript
 (defun org-tex-subscript (_subscript contents _info)
-  "Transcode a SUBSCRIPT object from Org to LaTeX.
+  "Transcode a SUBSCRIPT object from Org to plain TeX.
 CONTENTS is the contents of the object."
   (format "_{%s}" contents))
 
 ;;; Superscript
 (defun org-tex-superscript (_superscript contents _info)
-  "Transcode a SUPERSCRIPT object from Org to LaTeX.
+  "Transcode a SUPERSCRIPT object from Org to plain TeX.
 CONTENTS is the contents of the object."
   (format "^{%s}" contents))
 
 ;;; Underline
 (defun org-tex-underline (_underline contents info)
-  "Transcode UNDERLINE from Org to LaTeX.
+  "Transcode UNDERLINE from Org to plain TeX.
 CONTENTS is the text with underline markup.  INFO is a plist
 holding contextual information."
   (org-tex--text-markup contents 'underline info))
