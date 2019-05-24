@@ -219,8 +219,7 @@ contextual information."
     (underline . org-plaintex-underline)
     (table . org-plaintex-table)
     (table-row . org-plaintex-table-row)
-    (template . org-plaintex-template)
-    (verbatim . org-plaintex-verbatim)))
+    (template . org-plaintex-template)))
 
 (defcustom org-plaintex-classes
   '(("article"
