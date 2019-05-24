@@ -641,7 +641,7 @@ INFO is a plist used as a communication channel.  See
       ;; Handle the `protectedtexttt' special case: Protect some
       ;; special chars and use "\texttt{%s}" format string.
       (protectedtexttt
-       (format "\\texttt{%s}"
+       (format "{\\tt %s}"
 	       (replace-regexp-in-string
 		"--\\|[\\{}$%&_#~^]"
 		(lambda (m)
