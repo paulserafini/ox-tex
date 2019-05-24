@@ -138,7 +138,7 @@ $$\\vbox{
 	    label
     	    alignment
 	    (how-many-str "#" alignment)
-	    (if caption (concat ": " caption) "")
+	    (if (string= caption "") "" (concat ": " caption))
     	    contents)))
 
 ;; Concatenate rows with rules + \cr at the end of each line
