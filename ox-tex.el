@@ -170,7 +170,7 @@ holding contextual information."
   "Transcode an EXAMPLE-BLOCK element from Org to plain TeX.
 CONTENTS is nil.  INFO is a plist holding contextual
 information."
-  (format "\\medskip\\verbatim| %s|\\endverbatim\\medskip"
+  (format "\\medskip\\verbatim| %s|endverbatim\\medskip"
 	  (org-export-format-code-default example-block info)))
 
 ;;; Quote
