@@ -127,9 +127,10 @@ This function assumes TABLE has `org' as its `:type' property and
   (let* ((alignment (org-tex--align-string table info))
 	 (label (org-export-get-reference table info))
 	 (caption (org-export-data (org-export-get-caption table) info)))
-    (format "\\advance \\tablecount by 1
-$$\\vbox{
-\\label{tab:%s}\\halign{\\offinterlineskip
+    (format "
+$$\\vbox{\\advance \\tablecount by 1
+\\label{tab:%s}
+\\halign{\\offinterlineskip
 \\tstrut%s\\cr
 \\multispan %s \\hfil Table \\the\\tablecount %s \\hfil \\cr
 %s}}$$"
