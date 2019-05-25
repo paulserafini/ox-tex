@@ -19,7 +19,7 @@
   :package-version '(Org . "8.0")
   :type 'string)
 
-;;; Convert table to halign or matrix
+;; Convert table to halign or matrix
 (defun org-tex-table (table contents info)
   "Transcode a TABLE element from Org to plain TeX.
 CONTENTS is the contents of the table.  INFO is a plist holding
@@ -158,14 +158,14 @@ a communication channel."
 ;;				Blocks                                         ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;;; Center
+;; Center
 (defun org-tex-center-block (center-block contents info)
   "Transcode a CENTER-BLOCK element from Org to plain TeX.
 CONTENTS holds the contents of the center block.  INFO is a plist
 holding contextual information."
   (format "\\begincenter\n%s\\endcenter" contents))
 
-;;; Example
+;; Example
 (defun org-tex-example-block (example-block _contents info)
   "Transcode an EXAMPLE-BLOCK element from Org to plain TeX.
 CONTENTS is nil.  INFO is a plist holding contextual
@@ -173,14 +173,14 @@ information."
   (format "\\medskip\\verbatim| %s|endverbatim\\medskip"
 	  (org-export-format-code-default example-block info)))
 
-;;; Quote
+;; Quote
 (defun org-tex-quote-block (quote-block contents info)
   "Transcode a QUOTE-BLOCK element from Org to plain TeX.
 CONTENTS holds the contents of the block.  INFO is a plist
 holding contextual information."
   (format "\\beginquote\n%s\\endquote" contents))
 
-;;;; Source
+;; Source
 (defun org-tex-src-block (src-block _contents info)
   "Transcode a SRC-BLOCK element from Org to plain TeX.
 CONTENTS holds the contents of the item.  INFO is a plist holding
@@ -188,6 +188,7 @@ contextual information."
   (format "\\medskip\\verbatim| %s|endverbatim\\medskip"
 	  (org-export-format-code-default src-block info)))
 
+;; Fix width
 (defun org-tex-fixed-width (fixed-width _contents info)
   "Transcode a FIXED-WIDTH element from Org to plain TeX.
 CONTENTS is nil.  INFO is a plist holding contextual information."
@@ -374,7 +375,7 @@ holding export options."
      ;; Document end.
      "\n\\bye")))
 
-;;; Export to a buffer
+;; Export to a buffer
 (defun org-tex-export-as-tex
     (&optional async subtreep visible-only body-only ext-plist)
   "Export current buffer as a plain TeX buffer."
@@ -382,7 +383,7 @@ holding export options."
   (org-export-to-buffer 'tex "*Org PLAIN TEX Export*"
     async subtreep visible-only body-only ext-plist (lambda () (plain-TeX-mode))))
 
-;;; Export to a .tex file
+;; Export to a .tex file
 (defun org-tex-export-to-tex
     (&optional async subtreep visible-only body-only ext-plist)
   "Export current buffer as a plain TeX file."
@@ -516,28 +517,28 @@ holding contextual information."
 ;;				Markup                                         ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;;; Bold
+;; Bold
 (defun org-tex-bold (_bold contents info)
   "Transcode BOLD from Org to plain TeX.
 CONTENTS is the text with bold markup.  INFO is a plist holding
 contextual information."
   (org-tex--text-markup contents 'bold info))
 
-;;; Code
+;; Code
 (defun org-tex-code (code _contents info)
   "Transcode a CODE object from Org to plain TeX.
 CONTENTS is nil.  INFO is a plist used as a communication
 channel."
   (org-tex--text-markup (org-element-property :value code) 'code info))
 
-;;; Footnote
+;; Footnote
 (defun org-tex-footnote-reference (footnote-reference _contents info)
   "Transcode a FOOTNOTE-REFERENCE element from Org to plain TeX.
 CONTENTS is nil.  INFO is a plist holding contextual information."
   (let ((def (org-export-get-footnote-definition footnote-reference info)))
     (format "\\numberedfootnote{%s}" (org-trim (org-export-data def info)))))
 
-;;; Inline math
+;; Inline math
 (defun org-tex-math-block (_math-block contents _info)
   "Transcode a MATH-BLOCK object from Org to plain TeX.
 CONTENTS is a string.  INFO is a plist used as a communication
@@ -545,33 +546,33 @@ channel."
   (when (org-string-nw-p contents)
     (format "$%s$" (org-trim contents))))
 
-;;; Italic
+;; Italic
 (defun org-tex-italic (_italic contents info)
   "Transcode ITALIC from Org to plain TeX.
 CONTENTS is the text with italic markup.  INFO is a plist holding
 contextual information."
   (org-tex--text-markup contents 'italic info))
 
-;;; Subscript
+;; Subscript
 (defun org-tex-subscript (_subscript contents _info)
   "Transcode a SUBSCRIPT object from Org to plain TeX.
 CONTENTS is the contents of the object."
   (format "_{%s}" contents))
 
-;;; Superscript
+;; Superscript
 (defun org-tex-superscript (_superscript contents _info)
   "Transcode a SUPERSCRIPT object from Org to plain TeX.
 CONTENTS is the contents of the object."
   (format "^{%s}" contents))
 
-;;; Underline
+;; Underline
 (defun org-tex-underline (_underline contents info)
   "Transcode UNDERLINE from Org to plain TeX.
 CONTENTS is the text with underline markup.  INFO is a plist
 holding contextual information."
   (org-tex--text-markup contents 'underline info))
 
-;;; Markup
+;; Markup
 (defcustom org-tex-text-markup-alist '((bold . "{\\bf %s}")
 				       (code . "{\\tt %s}")
 				       (italic . "{\\it %s}")
@@ -585,7 +586,7 @@ holding contextual information."
   :type 'alist
   :options '(bold code italic strike-through underline verbatim))
 
-;;; Apply text markup
+;; Apply text markup
 (defun org-tex--text-markup (text markup info)
   "Format TEXT depending on MARKUP text markup.
 INFO is a plist used as a communication channel.  See
