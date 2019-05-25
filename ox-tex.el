@@ -440,15 +440,15 @@ contextual information."
   (let* ((type (org-element-property :type plain-list))
 	 (attr (org-export-read-attribute :attr_latex plain-list))
 	 (list-type (let ((env (plist-get attr :environment)))
-		       (cond (env (format "%s" env))
-			     ((eq type 'ordered) "numberedlist")
-			     ((eq type 'descriptive) "description")
-			     (t "orderedlist")))))
-     (format "\\%s%s\n%s\\end%s"
-	     list-type
-	     (or (plist-get attr :options) "")
-	     contents
-	     list-type)))
+		      (cond (env (format "%s" env))
+			    ((eq type 'ordered) "numberedlist")
+			    ((eq type 'descriptive) "description")
+			    (t "orderedlist")))))
+    (format "\\%s%s\n%s\\end%s"
+	    list-type
+	    (or (plist-get attr :options) "")
+	    contents
+	    list-type)))
 
 ;; List counters
 (defun org-tex-item (item contents info)
@@ -545,7 +545,7 @@ holding contextual information."
 	   (text (org-export-data (org-element-property :title headline) info)))
       (if section-fmt
 	  (concat (format section-fmt text "") "\n" contents)
-	  (concat "{\\bf" text "}\n\n" contents)))))
+	(concat "{\\bf" text "}\n\n" contents)))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
