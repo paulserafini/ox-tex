@@ -170,7 +170,7 @@ holding contextual information."
   "Transcode an EXAMPLE-BLOCK element from Org to plain TeX.
 CONTENTS is nil.  INFO is a plist holding contextual
 information."
-  (format "\\verbatim| %s|\\endverbatim"
+  (format "\\medskip\\verbatim| %s|\\endverbatim\\medskip"
 	  (org-export-format-code-default example-block info)))
 
 ;;; Quote
@@ -185,9 +185,16 @@ holding contextual information."
   "Transcode a SRC-BLOCK element from Org to plain TeX.
 CONTENTS holds the contents of the item.  INFO is a plist holding
 contextual information."
-  (format "\\verbatim| %s|endverbatim"
+  (format "\\medskip\\verbatim| %s|endverbatim\\medskip"
 	  (org-export-format-code-default src-block info)))
 
+(defun org-tex-fixed-width (fixed-width _contents info)
+  "Transcode a FIXED-WIDTH element from Org to plain TeX.
+CONTENTS is nil.  INFO is a plist holding contextual information."
+   (format "\\medskip\\verbatim| %s|endverbatim\\medskip"
+	   (org-remove-indentation
+	    (org-element-property :value fixed-width))
+   info))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;				Export                                         ;;
@@ -209,6 +216,7 @@ contextual information."
     (center-block . org-tex-center-block)
     (code . org-tex-code)
     (example-block . org-tex-example-block)
+    (fixed-width . org-tex-fixed-width)
     (footnote-reference . org-tex-footnote-reference)
     (headline . org-tex-headline)
     (italic . org-tex-italic)
