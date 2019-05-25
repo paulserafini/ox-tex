@@ -215,7 +215,7 @@ contextual information."
     (item . org-tex-item)
     (latex-math-block . org-tex-math-block)
     (latex-matrices . org-tex-matrices)
-    (latex-default-table-environment org-tex-default-table-environment)
+    (latex-default-table-environment . org-tex-default-table-environment)
     (plain-list . org-tex-plain-list)
     (quote-block . org-tex-quote-block)
     (src-block . org-tex-src-block)
