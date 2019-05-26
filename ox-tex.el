@@ -364,10 +364,7 @@ holding export options."
 	 (format "\\makeabstract\n"))
 
      (if (string= (plist-get info :tex-class) "book")
-	 (format "\\readtocfile\n"))
-
-
-     "\\def\\printlistinglineno{\\llap{\\sevenrm\\the\\lineno\\quad \\vrule height 8pt width0.7pt depth2pt\\quad}\\offinterlineskip}\n"
+	 (format "\\maketoc\n"))
 
      ;; Document's body.
      contents
