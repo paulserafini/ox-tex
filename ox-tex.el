@@ -132,7 +132,7 @@ $$\\vbox{\\advance \\tablecount by 1
 \\label{tab:%s}
 \\halign{\\offinterlineskip
 \\tstrut%s\\cr
-\\multispan %s \\hfil Table \\the\\tablecount %s \\hfil \\cr
+\\multispan %s \\vbox{\\noindent Table \\the\\tablecount %s\\smallskip} \\cr
 %s}}$$"
 	    label
     	    alignment
