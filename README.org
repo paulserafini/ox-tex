@@ -31,10 +31,10 @@ There are two document "classes", book and article. If a local file isn't define
 
 ** Table
 
-A table is defined in the usual way:
+A table can be defined with a caption and label:
 
 #+BEGIN_EXAMPLE
-  ,#+CAPTION: FORTRAN subroutines (Kelton & Law)
+  ,#+CAPTION: \hsize=5in FORTRAN subroutines (Kelton & Law)
   ,#+LABEL: fortran
   |--------------+--------------------------------------------------------------------|
   | Subprogram   | Purpose                                                            |
@@ -53,7 +53,7 @@ A table is defined in the usual way:
 
 # [[./img/fortran.png]]
 
-As in the example, since the strut is in the first column you can continue a previous column by putting \omit in the first column of that row. You would reference this table using ~Table [[fortran]]~.
+Since the caption is included as a vbox-encased row at the top of the table, you have to set the size of the vbox using \hsize. Since the strut is in the first column, you can continue a previous column by putting \omit in the first column of that row. You would reference this table using ~Table [[fortran]]~.
 
 You can create a matrix by setting 'environment' to matrix:
  
