@@ -1,18 +1,157 @@
 * ox-tex
 
-This is an export backend for Org which provides plain TeX (as opposed to LaTeX) export. It is derived from ox-latex. As yet, it enables the export of:
- - Emphasis and monospace markup (*bold*, /italic/, _underlined_, +strike-through+, =verbatim=, and ~code~)
- - Footnotes
- - Superscripts and subscripts
- - Tables
- - Lists
- - Quote, source, center, and example blocks
-Anything else will be exported in LaTeX format.
+This is an export backend for Org which provides plain TeX (as opposed to LaTeX) export. It is derived from ox-latex.
 
 * Installation
 
 To install ox-tex, put ox-tex.el in a directory which is included in your ~load path~, then add the following line to your init file:
 #+BEGIN_EXAMPLE
-(load "ox-tex")
+(require "ox-tex")
 #+END_EXAMPLE
 For TeX compilation you may also need to install the [[https://tug.org/eplain/doc/eplain.html][Eplain]] macro package. On Debian and Ubuntu, Eplain is part of the "texlive-formats-extra" package.
+
+* Features
+
+Since ox-tex is intended for writing, many of Org's features are not supported. Here I'll give an overview of what you /can/ do.
+
+** Preamble
+
+In the preamble of your document you may define the following:
+
+#+BEGIN_EXAMPLE
+  ,#+TEX_CLASS: article
+  ,#+MACROS: macros.tex
+  ,#+TITLE: Example Title
+  ,#+AUTHOR: Your Name
+  ,#+ABSTRACT: A condensed summary
+  ,#+KEYWORDS: org-mode, TeX
+#+END_EXAMPLE
+
+There are two document "classes", book and article. If a local file isn't defined using ~#+MACROS~, then the .tex file corresponding to ~#+TEX_CLASS~ is downloaded from this github respository and inserted into the preamble of the document. If you specify a local file then class doesn't do anything. Keywords are only included if there is an abstract.
+
+** Table
+
+A table is defined in the usual way:
+
+#+BEGIN_EXAMPLE
+  ,#+CAPTION: FORTRAN subroutines (Kelton & Law)
+  ,#+LABEL: fortran
+  |--------------+--------------------------------------------------------------------|
+  | Subprogram   | Purpose                                                            |
+  |--------------+--------------------------------------------------------------------|
+  | INIT         | Initialization routine                                             |
+  | TIMING       | Timing routine                                                     |
+  | ARRIVE       | Event routine to process type 1 events                             |
+  | DEPART       | Event routine to process type 2 events                             |
+  | REPORT       | Generates report when simulation ends                              |
+  | UPTAVG       | Updates continuous-time area-accuulator statistics                 |
+  | \omit        | just before each event occurence                                   |
+  | EXPON(RMEAN) | Function to generate an exponential random variate with mean RMEAN |
+  | RAND(1)      | Function to generate a uniform random variate between 0 and 1      |
+  |--------------+--------------------------------------------------------------------|
+#+END_EXAMPLE
+
+# [[./img/fortran.png]]
+
+As in the example, since the strut is in the first column you can continue a previous column by putting \omit in the first column of that row. You would reference this table using ~Table [[fortran]]~.
+
+You can create a matrix by setting 'environment' to matrix:
+ 
+#+BEGIN_EXAMPLE
+  ,#+ATTR_LATEX: :mode math :environment matrix
+  | 1 | 0 | 0 |
+  | 0 | 1 | 0 |
+  | 0 | 0 | 1 |
+#+END_EXAMPLE
+
+If 'mode' is set to math then the matrix is wrapped in $$. If it's set to in-line math it's wrapped in $. Otherwise it's not wrapped in anything.
+
+** Code blocks
+
+You can include code and its output in a verbatim environment:
+
+#+BEGIN_EXAMPLE
+  ,#+BEGIN_SRC python :results output :exports both
+    for i in range(0, 5):
+        print(i)
+  ,#+END_SRC
+#+END_EXAMPLE
+
+** Example blocks
+
+An example block is also exported to a verbatim environment:
+
+#+BEGIN_EXAMPLE
+  ,#+BEGIN_EXAMPLE
+    ,,#+BEGIN_QUOTE
+    HAMLET:
+    Why, look you now, how unworthy a thing you make of
+    me! You would play upon me; you would seem to know
+    my stops; you would pluck out the heart of my
+    mystery; you would sound me from my lowest note to
+    the top of my compass: and there is much music,
+    excellent voice, in this little organ; yet cannot
+    you make it speak. 'Sblood, do you think I am
+    easier to be played on than a pipe? Call me what
+    instrument you will, though you can fret me, yet you
+    cannot play upon me.
+    ,,#+END_QUOTE
+  ,#+END_EXAMPLE
+#+END_EXAMPLE
+
+** Quote blocks
+
+A quote block is exported with indentation on either side (\narrower).
+
+#+BEGIN_EXAMPLE
+  ,#+BEGIN_QUOTE
+  HAMLET:
+  Why, look you now, how unworthy a thing you make of
+  me! You would play upon me; you would seem to know
+  my stops; you would pluck out the heart of my
+  mystery; you would sound me from my lowest note to
+  the top of my compass: and there is much music,
+  excellent voice, in this little organ; yet cannot
+  you make it speak. 'Sblood, do you think I am
+  easier to be played on than a pipe? Call me what
+  instrument you will, though you can fret me, yet you
+  cannot play upon me.
+  ,#+END_QUOTE
+#+END_EXAMPLE
+
+** Center blocks
+
+#+BEGIN_EXAMPLE
+  ,#+BEGIN_CENTER
+  center me
+  ,#+END_CENTER
+#+END_EXAMPLE
+
+** Lists
+
+#+BEGIN_EXAMPLE
+- one
+- two
+- three
+#+END_EXAMPLE
+
+#+BEGIN_EXAMPLE
+1. one
+2. two
+3. three
+#+END_EXAMPLE
+
+** Markup
+
+#+BEGIN_EXAMPLE
+*bold*
+/italic/
+*bold*
+/italic/
+_underlined_
++strike-through+
+=verbatim=
+~code~
+superscript^2
+subscript_2
+#+END_EXAMPLE
