@@ -23,11 +23,13 @@
 \def\abstract#1{\medskip{\narrower\smallskip\noindent Abstract: #1\par}}
 \def\keywords#1{{\narrower\smallskip\noindent #1\par}}
 
-\def\beginquote{\begingroup
-        \advance\leftskip by 0.5in
-        \advance\rightskip by 0.5in
-        \par\narrower\smallskip\noindent}
-\def\endquote{\smallskip\endgroup\noindent}
+\def\beginquote{
+  \begingroup
+  \bigskip
+  \advance\leftskip by 0.5in
+  \advance\rightskip by 0.5in
+  \par\narrower\smallskip\noindent}
+\def\endquote{\bigskip\endgroup\noindent}
 
 \def\toprule{\noalign{\smallskip\hrule height 1pt}}
 \def\midrule{\noalign{\vskip 0.25em \hrule height 0.5pt}}
