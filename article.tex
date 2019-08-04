@@ -70,14 +70,13 @@
 \newcount\tablecount
 \def\label#1{\definexref{#1}{\the\tablecount}{table}}
 
+\def\caption#1{\noalign{{\normalbaselines
+\medskip\noindent #1\medskip}}}
+
 \def\begintable{%
+    \medskip
+    \vbox\bgroup
     \advance \tablecount by 1
-    \bigskip
-    \vbox\bgroup
-    \centerline{\currentcaption}
-    \vskip -1em
-    $$
-    \vbox\bgroup
     \def\strut{\vrule height 10pt depth3pt width0pt}
     \offinterlineskip
     \tabskip=0.1in
@@ -87,9 +86,5 @@
 \def\endtable{%
     \egroup
     \egroup
-    $$
-    \egroup
-    \bigskip
+    \medskip
 }
-
-\def\caption#1{\def\currentcaption{#1}}
