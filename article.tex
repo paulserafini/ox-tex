@@ -66,3 +66,29 @@
 
 \newcount\tablecount
 \def\label#1{\definexref{#1}{\the\tablecount}{table}}
+
+\newcount\tablecount
+\def\label#1{\definexref{#1}{\the\tablecount}{table}}
+
+\def\begintable{%
+    \advance \tablecount by 1
+    \bigskip
+    \vbox\bgroup
+    \centerline{\currentcaption}
+    $$
+    \vbox\bgroup
+    \def\strut{\vrule height 10pt depth3pt width0pt}
+    \offinterlineskip
+    \tabskip=0.25in
+    \halign\bgroup
+}
+
+\def\endtable{%
+    \egroup
+    \egroup
+    $$
+    \egroup
+    \bigskip
+}
+
+\def\caption#1{\def\currentcaption{#1}}
