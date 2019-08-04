@@ -7,6 +7,7 @@
 (require 'cl-lib)
 (require 'ox-latex)
 
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;			      Alignment                                        ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -129,8 +130,7 @@ This function assumes TABLE has `org' as its `:type' property and
 	 (caption (org-export-data (org-export-get-caption table) info)))
     (format "
 
-\\begintable
-\\label{%s}
+\\begintable\\label{%s}
 \\strut%s\\cr
 \\caption{%s}
 %s\\endtable"
@@ -150,7 +150,7 @@ a communication channel."
        ((not (org-export-get-next-element table-row info)) "\\bottomrule")
        (t "\\midrule"))
     (concat
-     contents "\\cr\n")))
+     contents " \\cr\n")))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -195,6 +195,7 @@ CONTENTS is nil.  INFO is a plist holding contextual information."
 	   (org-remove-indentation
 	    (org-element-property :value fixed-width))
    info))
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;				Export                                         ;;
