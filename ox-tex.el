@@ -128,16 +128,15 @@ This function assumes TABLE has `org' as its `:type' property and
 	 (label (org-export-get-reference table info))
 	 (caption (org-export-data (org-export-get-caption table) info)))
     (format "
-$$\\vbox{\\advance \\tablecount by 1
-\\label{tab:%s}
-\\halign{\\offinterlineskip
-\\tstrut%s\\cr
-\\multispan %s \\vbox{\\noindent Table \\the\\tablecount %s\\smallskip} \\cr
-%s}}$$"
+\\caption{%s}
+\\label{%s}
+
+\\begintable
+\\strut%s\\cr
+%s\\endtable"
+	    (or caption "")
 	    label
     	    alignment
-	    (how-many-str "#" alignment)
-	    (if (string= caption "") "" (concat ": " caption))
     	    contents)))
 
 ;; Concatenate rows with rules + \cr at the end of each line
