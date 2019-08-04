@@ -93,11 +93,11 @@ centered."
 	      ;; Check left border for the first cell only.
 	      (when (and (memq 'left borders) (not align))
 		(push "|" align))
-	      (push (if math? "\\enskip\\hfil#\\hfil\\enskip" ; center cells in matrices
+	      (push (if math? "\\hfil#\\hfil" ; center cells in matrices
 		      (cl-case (org-export-table-cell-alignment cell info)
-			(left "\\enskip#\\hfil\\enskip")
-			(right "\\enskip\\hfil#\\enskip")
-			(center "\\enskip\\hfil#\\hfil\\enskip")))
+			(left "#\\hfil")
+			(right "\\hfil#")
+			(center "\\hfil#\\hfil")))
 		    align)
 	      (when (memq 'right borders) (push "|" align))))
 	  info)
