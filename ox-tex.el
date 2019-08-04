@@ -301,16 +301,6 @@ associated information."
   :group 'org-export-latex
   :type '(string :tag "LaTeX class"))
 
-(defun download-macro (url)
-  "Insert a file from a URL."
-  (with-current-buffer
-      (url-retrieve-synchronously url)
-    (goto-char (point-min))
-    (re-search-forward "^$")
-    (delete-region (point) (point-min))
-    (kill-whole-line)
-    (buffer-string)))
-
 (defun org-tex--format-spec (info)
   "Create a format-spec for document meta-data.
 INFO is a plist used as a communication channel."
@@ -328,6 +318,13 @@ INFO is a plist used as a communication channel."
     (?c . ,(plist-get info :creator))
     (?D . ,(org-export-get-date info))))
 
+
+(defvar package-path (if load-file-name
+                         ;; File is being loaded.
+                         (file-name-directory load-file-name)
+		       ;; File is being evaluated using, for example, `eval-buffer'.
+		       default-directory))
+
 ;; Plain TeX file template
 (defun org-tex-template (contents info)
   "Return complete document string after plain TeX conversion.
@@ -344,8 +341,11 @@ holding export options."
        (format "\\input %s\n"
 	       (org-export-data (plist-get info :macros) info)))
       ((string= (plist-get info :tex-class) "article")
-       (download-macro "https://raw.githubusercontent.com/paulserafini/ox-tex/master/article.tex"))
-      (t (download-macro "https://raw.githubusercontent.com/paulserafini/ox-tex/master/book.tex")))
+       (format "\\input %sarticle.tex\n"
+	       package-path))
+      ((string= (plist-get info :tex-class) "book")
+       (format "\\input %sbook.tex\n"
+	       package-path)))
 
      ;; Title and subtitle.
      (let* ((subtitle (plist-get info :subtitle))
