@@ -194,8 +194,28 @@ CONTENTS is nil.  INFO is a plist holding contextual information."
    (format "\\medskip\\verbatim| %s|endverbatim\\medskip"
 	   (org-remove-indentation
 	    (org-element-property :value fixed-width))
-   info))
+	   info))
 
+(defun org-tex-verse-block (verse-block contents info)
+  "Transcode a VERSE-BLOCK element from Org to LaTeX.
+CONTENTS is verse block contents.  INFO is a plist holding
+contextual information."
+  (org-latex--wrap-label
+   verse-block
+   ;; In a verse environment, add a line break to each newline
+   ;; character and change each white space at beginning of a line
+   ;; into a space of 1 em.  Also change each blank line with
+   ;; a vertical space of 1 em.
+   (format "\\beginquote\\obeylines\n%s\\nobreak\\endquote"
+	   (replace-regexp-in-string
+	    "^[ \t]+" (lambda (m) (format "\\hskip{%dem}" (length m)))
+	    (replace-regexp-in-string
+	     "^[ \t]*\\\\\\\\$" "\\vskip{1em}"
+	     (replace-regexp-in-string
+	      ;; "\\([ \t]*\\\\\\\\\\)?[ \t]*\n" "\\\\\n"
+	      "\\([ \t]*\\\\\\\\\\)?[ \t]*\n" "\n"
+	      contents nil t) nil t) nil t))
+   info))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;				Export                                         ;;
@@ -226,6 +246,7 @@ CONTENTS is nil.  INFO is a plist holding contextual information."
     (latex-matrices . org-tex-matrices)
     (latex-default-table-environment . org-tex-default-table-environment)
     (plain-list . org-tex-plain-list)
+    (plain-text . org-tex-plain-text)
     (quote-block . org-tex-quote-block)
     (src-block . org-tex-src-block)
     (subscript . org-tex-subscript)
@@ -233,7 +254,8 @@ CONTENTS is nil.  INFO is a plist holding contextual information."
     (underline . org-tex-underline)
     (table . org-tex-table)
     (table-row . org-tex-table-row)
-    (template . org-tex-template)))
+    (template . org-tex-template)
+    (verse-block . org-tex-verse-block)))
 
 (defcustom org-tex-classes
   '(("article"
@@ -615,6 +637,42 @@ INFO is a plist used as a communication channel.  See
 		text nil t)))
       ;; Else use format string.
       (t (format fmt text)))))
+
+(defun org-tex-plain-text (text info)
+  "Transcode a TEXT string from Org to LaTeX.
+TEXT is the string to transcode.  INFO is a plist holding
+contextual information."
+  (let* ((specialp (plist-get info :with-special-strings))
+	 (output
+	  ;; Turn LaTeX into \LaTeX{} and TeX into \TeX{}.
+	  (let ((case-fold-search nil))
+	    (replace-regexp-in-string
+	     "\\<\\(?:La\\)?TeX\\>" "\\\\\\&{}"
+	     ;; Protect ^, ~, %, #, &, $, _, { and }.  Also protect \.
+	     ;; However, if special strings are used, be careful not
+	     ;; to protect "\" in "\-" constructs.
+	     (replace-regexp-in-string
+	      (concat "[%$#&{}_~^]\\|\\\\" (and specialp "\\([^-]\\|$\\)"))
+	      (lambda (m)
+		(cl-case (string-to-char m)
+		  (?\\ "$\\\\backslash$\\1")
+		  (?~ "\\\\textasciitilde{}")
+		  (?^ "\\\\^{}")
+		  (t "\\\\\\&")))
+	      text)))))
+    ;; Activate smart quotes.  Be sure to provide original TEXT string
+    ;; since OUTPUT may have been modified.
+    (when (plist-get info :with-smart-quotes)
+      (setq output (org-export-activate-smart-quotes output :latex info text)))
+    ;; Convert special strings.
+    (when specialp
+      (setq output (replace-regexp-in-string "\\.\\.\\." "$\\\\ldots{}$" output)))
+    ;; Handle break preservation if required.
+    (when (plist-get info :preserve-breaks)
+      (setq output (replace-regexp-in-string
+		    "\\(?:[ \t]*\\\\\\\\\\)?[ \t]*\n" "\\\\\n" output nil t)))
+    ;; Return value.
+    output))
 
 
 (provide 'ox-tex)
