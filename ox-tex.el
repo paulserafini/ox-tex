@@ -128,15 +128,15 @@ This function assumes TABLE has `org' as its `:type' property and
 	 (label (org-export-get-reference table info))
 	 (caption (org-export-data (org-export-get-caption table) info)))
     (format "
-\\caption{%s}
-\\label{%s}
 
 \\begintable
+\\label{%s}
 \\strut%s\\cr
+\\caption{%s}
 %s\\endtable"
-	    (or caption "")
 	    label
     	    alignment
+	    (or caption "")
     	    contents)))
 
 ;; Concatenate rows with rules + \cr at the end of each line
